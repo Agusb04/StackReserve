@@ -1,0 +1,35 @@
+name: GitHub Classroom Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - ejercicio-01
+      - ejercicio-02
+      - ejercicio-03
+      - ejercicio-04
+  workflow_dispatch:
+
+concurrency:
+  group: classroom-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  autograding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Repository preflight
+        run: bash .github/classroom/run_preflight.sh
+
+      - name: Exercise deadline
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/classroom/check_exercise_deadline.py

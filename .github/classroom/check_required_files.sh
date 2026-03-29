@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+test -f README.md
+test -f AGENTS.md
+test -f build.gradle
+test -f settings.gradle
+test -f ejercicios/README.md
+test -f ejercicios/01-entrevista-requisitos.md
+test -f ejercicios/02-historias-prototipos.md
+test -f ejercicios/03-diseno-codigo-pruebas.md
+test -f ejercicios/04-ux-bdd-refinamiento.md
+test -f entregas/README.md
+test -f entregas/ejercicio-01-template.md
+test -f entregas/ejercicio-02-template.md
+test -f entregas/ejercicio-03-template.md
+test -f entregas/ejercicio-04-template.md
+test -f docs/descubrimiento/entrevista-template.md
+test -f docs/descubrimiento/minuta-template.md
+test -f docs/descubrimiento/interesados-template.md
+test -f docs/descubrimiento/historia-dominio-template.md
+test -f docs/requisitos/requisitos-template.md
+test -f docs/requisitos/historias-usuario-template.md
+test -f docs/requisitos/modelo-dominio-template.md
+test -f docs/ux/prototipo-template.md
+test -f docs/ux/freeze-template.md
+test -f docs/ux/refinamiento-ux-template.md
+test -f docs/arquitectura/adr-template.md
+test -f docs/arquitectura/c4-contexto-template.md
+test -f docs/arquitectura/c4-contenedores-template.md
+test -f docs/arquitectura/c4-componentes-template.md
+test -f db/modelo-er-template.md
+test -f db/schema-template.sql
+test -f src/test/resources/features/feature-template.feature
+test -f scripts/preflight-ejercicio-01.sh
+test -f scripts/preflight-ejercicio-02.sh
+test -f scripts/preflight-ejercicio-03.sh
+test -f scripts/preflight-ejercicio-04.sh
+test -f .github/classroom/check_exercise_deadline.py
+test -f .github/classroom/check_exercise_outputs.py
+test -f .github/workflows/classroom.yml
