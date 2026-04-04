@@ -1,0 +1,13 @@
+@startuml
+title Historia de Dominio - Reserva de Sala de Estudio
+actor Estudiante
+actor "Biblioteca" as Biblioteca
+
+Estudiante -> Biblioteca : solicita reserva de sala\npara un horario determinado
+Biblioteca -> Biblioteca : consulta y determina disponibilidad
+Biblioteca --> Estudiante : informa salas disponibles
+Estudiante -> Biblioteca : selecciona sala disponible
+Biblioteca -> Biblioteca : registra el turno
+Biblioteca --> Estudiante : confirma la reserva
+
+@enduml
