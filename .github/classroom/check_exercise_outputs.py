@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -27,6 +28,18 @@ def require_tokens(path: str, tokens: list[str]) -> None:
     for token in tokens:
         if token not in text:
             raise SystemExit(f"missing token {token!r} in {path}")
+
+
+def require_without_placeholder_markers(path: str) -> None:
+    text = require_file(path).read_text(encoding="utf-8")
+    patterns = [
+        r"(?m)^\s*\.\.\.\s*$",
+        r"(?m)^\s*[-*]\s+\.\.\.\s*$",
+        r"(?m)^\s*\d+\.\s+\.\.\.\s*$",
+        r"(?m)^\|(?:[^|\n]*\.\.\.[^|\n]*\|){2,}\s*$",
+    ]
+    if any(re.search(pattern, text) for pattern in patterns):
+        raise SystemExit(f"placeholder content detected in {path}")
 
 
 def require_companion_files(markdown_path: str, *, editable_suffixes: list[str], image_suffixes: list[str]) -> None:
@@ -99,6 +112,7 @@ def check_ejercicio_01() -> None:
         ],
         min_length=320,
     )
+    require_without_placeholder_markers("docs/descubrimiento/entrevista.md")
     require_markdown_sections(
         "docs/descubrimiento/minuta.md",
         [
@@ -114,6 +128,7 @@ def check_ejercicio_01() -> None:
         ],
         min_length=220,
     )
+    require_without_placeholder_markers("docs/descubrimiento/minuta.md")
     require_markdown_sections(
         "docs/descubrimiento/interesados.md",
         [
@@ -126,6 +141,7 @@ def check_ejercicio_01() -> None:
         ],
         min_length=320,
     )
+    require_without_placeholder_markers("docs/descubrimiento/interesados.md")
     require_tokens(
         "docs/descubrimiento/interesados.md",
         ["Our System", "Containing System", "Wider Environment", "ID", "Capa", "Estado", "explícito", "inferido", "dudoso"],
@@ -147,6 +163,7 @@ def check_ejercicio_01() -> None:
         ],
         min_length=280,
     )
+    require_without_placeholder_markers("docs/descubrimiento/historia-dominio.md")
     require_companion_files(
         "docs/descubrimiento/historia-dominio.md",
         editable_suffixes=[".egn", ".puml"],
@@ -168,6 +185,7 @@ def check_ejercicio_01() -> None:
         ],
         min_length=420,
     )
+    require_without_placeholder_markers("docs/requisitos/requisitos.md")
     require_tokens(
         "docs/requisitos/requisitos.md",
         ["RF-", "RNF-", "RN-", "D-", "Evidencia o fuente", "Criterio de verificación", "Impacto en el sistema"],
@@ -182,6 +200,7 @@ def check_ejercicio_01() -> None:
             "## Pendientes",
         ],
     )
+    require_without_placeholder_markers("entregas/ejercicio-01.md")
 
 
 def check_ejercicio_02() -> None:
