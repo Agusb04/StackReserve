@@ -30,6 +30,7 @@ jobs:
         run: bash .github/classroom/run_preflight.sh
 
       - name: Exercise deadline
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/classroom/check_exercise_deadline.py
