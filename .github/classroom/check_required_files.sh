@@ -23,9 +23,12 @@ test -f docs/descubrimiento/historia-dominio-template.md
 test -f docs/requisitos/requisitos-template.md
 test -f docs/requisitos/historias-usuario-template.md
 test -f docs/requisitos/modelo-dominio-template.md
+test -f docs/requisitos/modelo-dominio-template.puml
 test -f docs/ux/prototipo-template.md
 test -f docs/ux/freeze-template.md
 test -f docs/ux/refinamiento-ux-template.md
+test -f docs/ux/storybook/index.html
+test -f docs/ux/storybook/src/story-template.html
 test -f docs/arquitectura/adr-template.md
 test -f docs/arquitectura/c4-contexto-template.md
 test -f docs/arquitectura/c4-contenedores-template.md

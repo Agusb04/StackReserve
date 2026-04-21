@@ -6,5 +6,5 @@
 
 ```mermaid
 erDiagram
-  USUARIO ||--o{ SOLICITUD : realiza
+  USUARIO ||--o{ SOLICITUD
 ```

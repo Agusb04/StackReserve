@@ -27,11 +27,12 @@ Construir la base de descubrimiento y requisitos del TPI a partir de una entrevi
 
 ## Criterio
 
-- La entrevista es la fuente principal de evidencia.
+- La entrevista es la evidencia principal.
 - Los artefactos vivos se derivan de los templates locales.
-- Para interesados e historia de dominio, entregá Markdown + fuente editable + export visual.
+- Para interesados e historia de dominio, entregá Markdown + archivo editable + export visual.
 - En interesados, respetá Onion Model con `Our System`, `Containing System` y `Wider Environment`.
 - En historia de dominio, trabajá un solo escenario y dejá explícito el recorte aplicado.
 - La minuta debe dejar explícitos participantes, fecha y hora, lugar o medio y compromisos asumidos.
 - En `docs/requisitos/requisitos.md`, separá alcance, fuera de alcance, requisitos funcionales, requisitos no funcionales y reglas de negocio.
 - Cada requisito debe quedar trazado a evidencia de entrevista o minuta; las historias de usuario y Gherkin quedan para el ejercicio 2.
+- Como mejora optativa, podés llevar `docs/descubrimiento/historia-dominio.md` a Egon con archivo `.egn` y export visual estable; eso eleva la calidad del artefacto pero no cambia el criterio de aprobación del ejercicio.

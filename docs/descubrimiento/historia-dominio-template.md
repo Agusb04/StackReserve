@@ -1,9 +1,9 @@
 # Historia de dominio
 
-Archivos companion esperados:
+Archivo editable y export visual esperados:
 
-- `docs/descubrimiento/historia-dominio.egn` o `docs/descubrimiento/historia-dominio.puml`
-- `docs/descubrimiento/historia-dominio.svg` o `docs/descubrimiento/historia-dominio.png`
+- archivo editable: `docs/descubrimiento/historia-dominio.egn` o `docs/descubrimiento/historia-dominio.puml`
+- export visual: `docs/descubrimiento/historia-dominio.svg` o `docs/descubrimiento/historia-dominio.png`
 
 ## Escenario elegido
 

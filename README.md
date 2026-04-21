@@ -10,8 +10,8 @@ Cada estudiante trabaja durante toda la cursada sobre su propio repositorio deri
 - `ejercicios/`: enunciados publicados por docentes.
 - `entregas/`: manifiestos de entrega por ejercicio.
 - `docs/descubrimiento/`: entrevista, minuta, interesados e historia de dominio.
-- `docs/requisitos/`: requisitos, historias de usuario y modelo de dominio.
-- `docs/ux/`: prototipos, freeze y refinamiento UX.
+- `docs/requisitos/`: requisitos, historias de usuario y modelo de dominio conceptual con PlantUML editable y export visual.
+- `docs/ux/`: prototipos, freeze, refinamiento UX y el scaffold de Storybook HTML en `docs/ux/storybook/`.
 - `docs/arquitectura/`: ADRs y diagramas C4.
 - `src/`: implementación backend Spring Boot.
 - `db/`: modelo ER y esquema SQL versionado.
@@ -20,7 +20,7 @@ Cada estudiante trabaja durante toda la cursada sobre su propio repositorio deri
 
 ## Regla de trabajo
 
-Los docentes controlan `AGENTS.md`, `ejercicios/`, los archivos `*-template`, `.github/` y los scripts de validación.
+Los docentes controlan `AGENTS.md`, `ejercicios/`, los archivos `*-template`, el scaffold base de Storybook (`docs/ux/storybook/index.html`), `.github/` y los scripts de validación.
 
 Los estudiantes crean y mantienen los artefactos vivos derivados de esos templates, además del código, pruebas y refinamientos del proyecto.
 

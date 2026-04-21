@@ -50,26 +50,48 @@ def require_companion_files(markdown_path: str, *, editable_suffixes: list[str],
 
     editable_path = next((path for path in editable if path.is_file()), None)
     if editable_path is None:
-        raise SystemExit(f"missing editable companion for {markdown_path}")
+        raise SystemExit(f"missing editable source file for {markdown_path}")
 
     image_path = next((path for path in image if path.is_file()), None)
     if image_path is None:
-        raise SystemExit(f"missing image companion for {markdown_path}")
+        raise SystemExit(f"missing visual export for {markdown_path}")
 
     text = markdown.read_text(encoding="utf-8")
     if image_path.name not in text:
         raise SystemExit(f"{markdown_path} must reference {image_path.name}")
 
 
-def require_live_feature() -> None:
+def require_hu_features(*, min_count: int) -> list[Path]:
     features_dir = Path("src/test/resources/features")
     features = [
         path
-        for path in features_dir.glob("*.feature")
-        if path.name != "feature-template.feature"
+        for path in features_dir.glob("HU-*.feature")
+        if path.is_file()
     ]
-    if not features:
-        raise SystemExit("missing live feature file in src/test/resources/features")
+    if len(features) < min_count:
+        raise SystemExit(
+            f"missing HU feature files in src/test/resources/features (expected at least {min_count}, found {len(features)})"
+        )
+    return features
+
+
+def require_storybook_sources(*, min_count: int = 1) -> None:
+    storybook_root = Path("docs/ux/storybook")
+    index_path = require_file("docs/ux/storybook/index.html")
+    template_path = require_file("docs/ux/storybook/src/story-template.html")
+    story_files = [
+        path
+        for path in (storybook_root / "src").glob("*.html")
+        if path.is_file() and path.name != "story-template.html"
+    ]
+    if len(story_files) < min_count:
+        raise SystemExit(
+            f"missing live Storybook stories in {storybook_root / 'src'} (expected at least {min_count}, found {len(story_files)})"
+        )
+    if "story-template.html" not in index_path.read_text(encoding="utf-8"):
+        raise SystemExit("docs/ux/storybook/index.html must reference src/story-template.html")
+    if "HU-" not in template_path.read_text(encoding="utf-8"):
+        raise SystemExit("docs/ux/storybook/src/story-template.html must be aligned with HU traceability")
 
 
 def require_freeze_export() -> None:
@@ -204,10 +226,55 @@ def check_ejercicio_01() -> None:
 
 
 def check_ejercicio_02() -> None:
-    require_markdown_sections("docs/requisitos/historias-usuario.md", ["## Backlog", "## Historias priorizadas", "HU-"], min_length=200)
-    require_markdown_sections("docs/requisitos/modelo-dominio.md", ["## Alcance del modelo", "## Conceptos principales", "```mermaid"], min_length=200)
-    require_markdown_sections("docs/ux/prototipo.md", ["## Objetivo del prototipo", "## Link read-only", "## Recorrido principal"], min_length=160)
-    require_markdown_sections("docs/ux/freeze.md", ["## Link read-only", "## Export congelado", "## Consistencia verificada"], min_length=140)
+    require_markdown_sections(
+        "docs/requisitos/historias-usuario.md",
+        ["## Backlog", "## Historias priorizadas", "## Criterios de calidad", "HU-"],
+        min_length=260,
+    )
+    require_markdown_sections(
+        "docs/requisitos/modelo-dominio.md",
+        [
+            "## Archivo fuente y export visual",
+            "## Alcance del modelo",
+            "## Inputs usados",
+            "## Historias priorizadas de referencia",
+            "## Entidades conceptuales",
+            "## Relaciones persistidas",
+            "## Atributos",
+            "## Diagrama",
+            "## Trazabilidad",
+            "## Fuera de alcance y exclusiones",
+            "## Dudas abiertas",
+            "## Subset permitido de PlantUML",
+        ],
+        min_length=300,
+    )
+    require_tokens("docs/requisitos/modelo-dominio.md", ["PlantUML", "HU-", "Trazabilidad"])
+    require_companion_files(
+        "docs/requisitos/modelo-dominio.md",
+        editable_suffixes=[".puml"],
+        image_suffixes=[".svg", ".png"],
+    )
+    require_markdown_sections(
+        "docs/ux/prototipo.md",
+        [
+            "## Objetivo del prototipo",
+            "## Historias y escenarios cubiertos",
+            "## Pantallas o recorridos cubiertos",
+            "## Storybook",
+            "## Link read-only",
+            "## Export congelado",
+            "## Decisiones de UX visibles",
+        ],
+        min_length=220,
+    )
+    require_tokens("docs/ux/prototipo.md", ["Storybook", "HU-"])
+    require_markdown_sections(
+        "docs/ux/freeze.md",
+        ["## Link read-only", "## Storybook congelado", "## Export congelado", "## Consistencia verificada"],
+        min_length=160,
+    )
+    require_tokens("docs/ux/freeze.md", ["Storybook", "HU-", "docs/ux/exports/"])
     require_markdown_sections(
         "entregas/ejercicio-02.md",
         [
@@ -218,7 +285,8 @@ def check_ejercicio_02() -> None:
             "## Pendientes",
         ],
     )
-    require_live_feature()
+    require_hu_features(min_count=3)
+    require_storybook_sources(min_count=1)
     require_freeze_export()
 
 
@@ -242,7 +310,7 @@ def check_ejercicio_03() -> None:
     )
     require_rest_layer_structure()
     require_java_under("src/test/java")
-    require_live_feature()
+    require_hu_features(min_count=1)
 
 
 def check_ejercicio_04() -> None:

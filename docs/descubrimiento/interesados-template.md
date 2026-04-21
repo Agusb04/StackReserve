@@ -1,9 +1,9 @@
 # Interesados
 
-Archivos companion esperados:
+Archivos editables y export visual esperados:
 
-- `docs/descubrimiento/interesados.drawio` o `docs/descubrimiento/interesados.puml`
-- `docs/descubrimiento/interesados.svg` o `docs/descubrimiento/interesados.png`
+- archivo editable: `docs/descubrimiento/interesados.drawio` o `docs/descubrimiento/interesados.puml`
+- export visual: `docs/descubrimiento/interesados.svg` o `docs/descubrimiento/interesados.png`
 
 ## Sistema analizado
 
