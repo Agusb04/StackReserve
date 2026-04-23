@@ -3,6 +3,7 @@
 .gradle-home/
 build/
 out/
+bin/
 .idea/
 *.iml
 __pycache__/
