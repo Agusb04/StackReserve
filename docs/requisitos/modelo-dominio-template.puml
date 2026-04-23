@@ -1,0 +1,24 @@
+@startuml
+class SolicitudReserva {
+  codigo
+  fechaCreacion
+}
+class Reserva {
+  codigo
+  estado
+  fechaConfirmacion
+}
+class Turno {
+  fechaHora
+  duracionMinutos
+}
+class ReservaTurno {
+  motivo
+  observacion
+}
+
+SolicitudReserva "1" -- "0..1" Reserva
+Reserva "1" -- "1" Turno
+Reserva "1" -- "1" ReservaTurno
+Turno "1" -- "1" ReservaTurno
+@enduml
