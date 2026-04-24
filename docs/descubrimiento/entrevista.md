@@ -228,6 +228,42 @@ Sí. Existen múltiples tareas repetitivas (confirmaciones, consultas de disponi
 
 ---
 
+### P13
+**Pregunta**
+¿Qué canales de notificación prefieren los usuarios? (email, aplicación, mensajería)
+
+**Respuesta**
+Desde el personal de biblioteca se observa que hoy no hay un canal único; la comunicación es informal y fragmentada. Muchos estudiantes piden confirmaciones por email institucional, mientras que otros escriben por WhatsApp de forma externa al flujo oficial. 
+Como suposición, si se ordenara el sistema, se debería priorizar el email institucional y notificaciones dentro de una aplicación, aunque es algo que todavía no está consensuado ni decidido formalmente.
+
+### P14
+**Pregunta**
+¿Se aplicarán penalizaciones por ausencias o cancelaciones tardías?
+
+**Respuesta**
+Respuesta: Desde coordinación se reconoce que es un problema crítico que afecta la disponibilidad. Si bien no hay una penalización formal hoy, se está considerando implementar restricciones (como limitar reservas futuras) para usuarios con ausencias acumuladas. Aún no es una regla cerrada.
+
+### P15 
+**Pregunta**
+¿Existen distintos niveles de prioridad entre usuarios?
+
+**Respuesta**
+Respuesta: Actualmente no se manejan niveles de prioridad formales; todos los usuarios reservan en igualdad de condiciones. Aunque se contempla la posibilidad teórica de priorizar casos académicos urgentes o actividades institucionales, no es algo que esté definido ni que se aplique en el proceso actual.
+
+### P16 
+**Pregunta**
+¿Se integrará con sistemas institucionales? 
+
+**Respuesta**
+Respuesta: Actualmente, el sistema institucional solo se utiliza para la autenticación de usuarios. Aunque existe la posibilidad teórica de integrar validaciones académicas más profundas en el futuro, no hay una definición formal sobre el nivel de integración para la gestión de turnos en esta etapa.
+
+### P17
+**Pregunta**
+Como personal de biblioteca, queres registrar la llegada del estudiante a la sala, para que el sistema marque el turno como utilizado? o con un qr?
+
+**Respuesta**
+Nos serviría poder marcar la asistencia cuando el estudiante llega. Lo del QR suena útil, porque evita carga manual y filas, pero es una idea, no algo definido. También podría ser que el personal lo confirme desde el sistema, dependiendo de cómo se implemente.
+
 ## Validación de hipótesis
 
 ### Hipótesis 1
@@ -265,7 +301,6 @@ Es razonable inferir que un sistema de recordatorios podría mitigar los problem
 ---
 
 ## Dudas pendientes
-
 - ¿Qué canales de notificación prefieren los usuarios? (email, aplicación, mensajería)
 - ¿Deben aplicarse penalizaciones por ausencias o cancelaciones tardías?
 - ¿Existen distintos niveles de prioridad entre usuarios?

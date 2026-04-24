@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HU-01 - Reserva de Salas</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1120;
+        --surface: rgba(15, 23, 42, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.16);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #f97316; /* Naranja para resaltar acciones */
+        --success: #22c55e;
+        --error: #ef4444;
+        --info: #3b82f6;
+        --chip: rgba(249, 115, 22, 0.14);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.85)), var(--bg);
+        padding-bottom: 50px;
+      }
+
+      .story { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+      /* Hero / Header */
+      .hero {
+        display: grid; gap: 16px; margin-bottom: 24px; padding: 28px;
+        border-radius: 24px; background: var(--surface); border: 1px solid var(--surface-border);
+      }
+
+      .chip {
+        display: inline-flex; align-items: center; padding: 6px 12px;
+        border-radius: 999px; background: var(--chip); color: #fdba74;
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+      }
+
+      /* Grid Layout */
+      .grid { display: grid; gap: 20px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .card { grid-column: span 12; padding: 24px; border-radius: 20px; background: var(--surface); border: 1px solid var(--surface-border); }
+      .half { grid-column: span 6; }
+      @media (max-width: 900px) { .half { grid-column: span 12; } }
+
+      /* UI App Simulator */
+      .app-container {
+        background: #020617; border-radius: 16px; padding: 20px; border: 1px solid #1e293b;
+      }
+      .sala-card {
+        background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 12px;
+        border: 2px solid transparent; transition: 0.3s;
+      }
+      .sala-card.active { border-color: var(--info); }
+      .sala-card.llena { border-color: var(--error); opacity: 0.6; }
+
+      button {
+        background: var(--accent); color: white; border: none; padding: 10px 16px;
+        border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px;
+      }
+      button:hover { filter: brightness(1.1); }
+
+      select {
+        width: 100%; padding: 12px; background: #0f172a; color: white;
+        border-radius: 10px; border: 1px solid var(--accent); margin-bottom: 20px;
+      }
+
+      /* Logs & Feedback */
+      .history-log {
+        background: #000; padding: 12px; border-radius: 10px; font-family: monospace;
+        font-size: 11px; height: 150px; overflow-y: auto; border: 1px solid #1e293b;
+      }
+      .alert {
+        padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px; display: none;
+        border: 1px solid transparent; font-weight: 500;
+      }
+      .alert-success { background: rgba(34, 197, 94, 0.1); color: #86efac; border-color: var(--success); }
+      .alert-error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: var(--error); }
+
+      .gherkin-box {
+        font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);
+        padding: 16px; border-radius: 12px; color: var(--muted); white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <article class="story">
+      <header class="hero">
+        <div class="chip">HU-01</div>
+        <h1>Reserva de Salas de Estudio</h1>
+        <p class="muted">Simulador interactivo para validar reglas de negocio: Capacidad (RN-01), FCFS (RN-07) y Unicidad (RN-10).</p>
+      </header>
+
+      <section class="grid">
+        <section class="card">
+          <h2>Configuración de Escenario Gherkin</h2>
+          <select id="scenario-picker" onchange="initEscenario()">
+            <option value="happy">Escenario: Reserva exitosa (Multimedia A)</option>
+            <option value="full">Escenario: Capacidad máxima (Silencio B)</option>
+            <option value="fcfs">Escenario Esquema: FCFS (Orden de llegada)</option>
+            <option value="double">Regla: Reserva duplicada (RN-10)</option>
+          </select>
+          <div id="gherkin-text" class="gherkin-box"></div>
+        </section>
+
+        <section class="card half">
+          <h2>Simulador de Aplicación</h2>
+          <div class="app-container">
+            <div id="card-A" class="sala-card">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>Sala Multimedia A</strong>
+                <span id="occ-A" class="muted">0 / 6</span>
+              </div>
+              <div id="btn-group-A"></div>
+            </div>
+
+            <div id="card-B" class="sala-card">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>Sala Silencio B</strong>
+                <span id="occ-B" class="muted">0 / 4</span>
+              </div>
+              <div id="btn-group-B"></div>
+            </div>
+            <div id="feedback" class="alert"></div>
+          </div>
+        </section>
+
+        <section class="card half">
+          <h2>Historial (Entidad: HistorialEstado)</h2>
+          <div id="log" class="history-log"></div>
+          <div style="margin-top:20px;">
+            <h3>Consistencia de Dominio</h3>
+            <ul style="font-size: 13px; color: var(--muted);">
+              <li><strong>Entidad Sala:</strong> Valida cupo físico.</li>
+              <li><strong>RN-10:</strong> Valida unicidad Estudiante-Turno.</li>
+              <li><strong>RN-06:</strong> Persiste cambio de estado.</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </article>
+
+    <script>
+      const data = {
+        happy: { occA: 2, occB: 0, text: "Escenario: Reserva exitosa\nDado que hay cupo disponible...\nCuando Lucas solicita reservar...\nEntonces el sistema registra nueva reserva 'confirmada'\nY registra estado 'confirmada' en el historial." },
+        full: { occA: 0, occB: 4, text: "Escenario: Capacidad máxima\nDado que Silencio B alcanzó su capacidad (4/4)...\nCuando Lucas solicita reservar...\nEntonces el sistema rechaza la solicitud." },
+        fcfs: { occA: 5, occB: 0, text: "Escenario Esquema: FCFS\nDado que queda 1 vacante en Sala A...\nCuando Ana (09:00:01) y Bruno (09:00:05) solicitan...\nEntonces Ana confirma y Bruno es rechazado." },
+        double: { occA: 1, occB: 0, text: "Escenario: Reserva duplicada\nDado que Lucas ya tiene reserva en Sala A...\nCuando intenta reservar en Sala B para el mismo horario...\nEntonces el sistema rechaza por duplicidad (RN-10)." }
+      };
+
+      let salas = { A: 0, B: 0, maxA: 6, maxB: 4 };
+      let usuariosConReserva = [];
+
+      function initEscenario() {
+        const scn = document.getElementById('scenario-picker').value;
+        const config = data[scn];
+        
+        salas.A = config.occA;
+        salas.B = config.occB;
+        usuariosConReserva = (scn === 'double') ? ['Lucas Martínez'] : [];
+        
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('log').innerHTML = '';
+        document.getElementById('gherkin-text').innerText = config.text;
+        
+        const btnA = document.getElementById('btn-group-A');
+        const btnB = document.getElementById('btn-group-B');
+        
+        if (scn === 'fcfs') {
+          btnA.innerHTML = `
+            <button onclick="intentarReserva('A', 'Ana Lizondo')">Ana (09:00:01)</button>
+            <button onclick="intentarReserva('A', 'Bruno Díaz')">Bruno (09:00:05)</button>
+          `;
+          btnB.innerHTML = '';
+        } else {
+          btnA.innerHTML = `<button onclick="intentarReserva('A', 'Lucas Martínez')">Reservar (Lucas)</button>`;
+          btnB.innerHTML = `<button onclick="intentarReserva('B', 'Lucas Martínez')" style="background:#475569">Reservar (Lucas)</button>`;
+        }
+        updateUI();
+      }
+
+      function updateUI() {
+        document.getElementById('occ-A').innerText = `${salas.A} / 6`;
+        document.getElementById('occ-B').innerText = `${salas.B} / 4`;
+        document.getElementById('card-A').className = `sala-card ${salas.A >= salas.maxA ? 'llena' : 'active'}`;
+        document.getElementById('card-B').className = `sala-card ${salas.B >= salas.maxB ? 'llena' : ''}`;
+      }
+
+      function intentarReserva(salaId, usuario) {
+        const fb = document.getElementById('feedback');
+        const max = (salaId === 'A' ? salas.maxA : salas.maxB);
+        fb.style.display = 'block';
+
+        if (usuariosConReserva.includes(usuario)) {
+          fb.className = "alert alert-error";
+          fb.innerText = "Ya posees una reserva para este horario. (RN-10)";
+          addLog(usuario, "RECHAZADA", "Error RN-10: Reserva duplicada.");
+          return;
+        }
+
+        if (salas[salaId] < max) {
+          salas[salaId]++;
+          usuariosConReserva.push(usuario);
+          updateUI();
+          fb.className = "alert alert-success";
+          fb.innerText = `¡Reserva confirmada para ${usuario}!`;
+          addLog(usuario, "confirmada", `Estado persistido en historial.`);
+        } else {
+          fb.className = "alert alert-error";
+          fb.innerText = "Sala completa.";
+          addLog(usuario, "RECHAZADA", "Capacidad agotada.");
+        }
+      }
+
+      function addLog(user, status, detail) {
+        const log = document.getElementById('log');
+        log.innerHTML = `<div>[${new Date().toLocaleTimeString()}] <b>${status.toUpperCase()}</b> - ${user}: ${detail}</div>` + log.innerHTML;
+      }
+
+      initEscenario();
+    </script>
+  </body>
+</html>

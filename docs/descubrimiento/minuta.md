@@ -62,6 +62,7 @@ Relevar el proceso actual de gestión de turnos y reservas en la biblioteca, ide
   - Prevención de superposiciones
   - Control de capacidad de salas
   - Acceso a métricas (ocupación, ausencias, demanda)
+- Priorizar el email institucional y las notificaciones dentro de la aplicación como canales oficiales para formalizar la comunicación. 
 
 ---
 
@@ -74,7 +75,10 @@ Relevar el proceso actual de gestión de turnos y reservas en la biblioteca, ide
   - Registro automático de cancelaciones
 - Incluir un **dashboard** para coordinación con métricas de uso.
 - Evaluar la incorporación de automatización para reducir tareas manuales.
-
+- Priorizar el email institucional y las notificaciones dentro de la aplicación como canales oficiales para formalizar la comunicación. 
+- Se ratifica que el sistema no implementará lógicas de prioridad por tipo de usuario en esta fase, garantizando igualdad de acceso para todos los estudiantes.
+- Se decide utilizar el sistema institucional exclusivamente para la autenticación de usuarios (Login), manteniendo la gestión de turnos como un módulo independiente para evitar dependencias técnicas no definidas.
+- Que el personal haga un check in del alumno
 ---
 
 ## Confirmaciones
@@ -84,21 +88,25 @@ Relevar el proceso actual de gestión de turnos y reservas en la biblioteca, ide
 - Se confirma que la automatización de tareas reduciría la carga de trabajo.
 - Se valida que los conflictos en reservas son frecuentes.
 - Se confirma el interés en contar con herramientas de visualización (dashboard).
+- se confirma Que el personal de biblioteca haga un check in del alumno
 
 ---
 
 ## Compromisos asumidos
 
-- El equipo de desarrollo analizará los hallazgos para definir los requisitos del sistema.
-- Se continuará el relevamiento para validar funcionalidades específicas (por ejemplo, notificaciones).
-- Se evaluarán posibles soluciones tecnológicas para centralizar la gestión.
+- El entrevistador se compromete a consolidar los requisitos identificados a partir de la entrevista.
+- El entrevistador se compromete a hacer una minuta de lo charlado en la reunion
+- El equipo de desarrollo se compromete a elaborar una primera versión del modelo de dominio.
+- el equipo de desarrollo diseñará el modelo de datos de manera que soporte el historial de ausencias, permitiendo activar restricciones en una fase posterior si asi se desea.
+- Se acuerda realizar una nueva instancia de validación con coordinación para revisar reglas de negocio.
+- Se acuerda relevar con usuarios los canales de notificación preferidos.
 
 ---
 
 ## Pendientes
-
-- Definir canales de notificación preferidos (email, app, mensajería).
+- Definir canales de notificación definitivos: Consensuar si se descartará totalmente la mensajería informal (WhatsApp).
 - Establecer reglas ante ausencias (penalizaciones, restricciones).
 - Determinar si existen prioridades entre usuarios.
 - Evaluar integración con sistemas existentes.
+- Coordinación debe definir el número exacto de ausencias permitidas y la duración de la restricción antes de la próxima iteración.
 - Validar la necesidad de recordatorios automáticos con mayor evidencia.

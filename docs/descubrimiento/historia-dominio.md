@@ -1,41 +1,64 @@
 # Historia de dominio
+
 ## Escenario elegido
-Reserva de una sala de estudio por parte de un estudiante.
+
+Reserva y uso de una sala de estudio por parte de un estudiante.
+
 ---
+
 ## Recorte aplicado
-Se modela el proceso de reserva de un turno en condiciones normales (happy path), enfocándose en el dominio del problema.
+
+Se modela el proceso en condiciones normales (happy path), enfocándose en el dominio.
+
 No se incluyen:
-- detalles de implementación (manual o digital)  
 - cancelaciones  
-- conflictos o excepciones  
-- métricas o análisis  
+- conflictos  
+- excepciones  
+- detalles de implementación  
+
 ---
+
 ## Actores
-- Estudiante
-- Biblioteca
+
+- Estudiante  
+- Personal de biblioteca  
+
 ---
+
 ## Objetos de trabajo
-- Sala
-- Turno
-- Disponibilidad
-- Reserva
+
+- Sala  
+- Turno  
+- Reserva  
+- Disponibilidad  
+
 ---
+
 ## Historia paso a paso
-![Historia de dominio](historia-dominio.svg)
-1. El estudiante solicita la reserva de una sala de estudio para un horario determinado.  
-2. Se consulta y determina la disponibilidad de la sala solicitada.  
-3. El estudiante selecciona una sala disponible.  
-4. Se registra la reserva del turno.  
-5. El turno queda confirmado para el estudiante.  
+
+![Historia de dominio](historia-dominio.png)
+
+1. El estudiante consulta la disponibilidad de salas para un turno determinado.  
+2. El personal consulta la disponibilidad de salas.  
+3. El personal informa las opciones disponibles.  
+4. El estudiante solicita la reserva de una sala y turno.  
+5. El personal registra la reserva.  
+6. El estudiante hace uso de la sala en el turno reservado.  
+7. El personal registra la asistencia del estudiante al turno.
+
 ---
+
 ## Dudas y supuestos
-- Se asume que la disponibilidad refleja el estado actual de las salas.  
-- No se consideran cambios concurrentes en la disponibilidad durante el proceso.  
-- No se incluyen reglas de negocio como límites de reservas por usuario.  
-- No se contemplan cancelaciones ni ausencias.  
+
+- La disponibilidad refleja el estado actual.  
+- No se consideran conflictos concurrentes.  
+- No se incluyen cancelaciones ni ausencias.  
+- La asistencia es registrada por el personal al inicio del turno.  
+
 ---
+
 ## Criterios de control
-- Se modela un único escenario (reserva de turno)  
-- Se describe el dominio sin depender de una implementación específica  
-- Se mantiene el flujo principal (happy path)
- 
+
+- Se modela un único escenario.  
+- Se describe el dominio (no la solución).  
+- Se sigue el flujo completo (reserva + uso + registro de asistencia).
