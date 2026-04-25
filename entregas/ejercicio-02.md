@@ -29,7 +29,7 @@ Consolidar historias de usuario, escenarios Gherkin, modelo de dominio y prototi
 
 ### Artefactos ejercicio-02
 - `docs/requisitos/historias-usuario.md`: 7 historias de usuario, solo 3 priorizadas para el flujo de trabajo HU-01,HU-03 Y HU-04
-- `docs/requisitos/modelo-dominio.md`: Documentación de contexto que describe las entidades (Sala, Turno, Reserva, HistorialEstado), sus atributos y las decisiones de diseño, como la separación del historial para trazabilidad de estados.
+- `docs/requisitos/modelo-dominio.md`: Documentación de contexto que describe las entidades (Sala, Turno, Reserva,Estudiante, HistorialEstado), sus atributos y las decisiones de diseño, como la separación del historial para trazabilidad de estados.
 - `docs/requisitos/modelo-dominio.puml`: Código fuente en PlantUML que representa la estructura estática del sistema, reflejando las multiplicidades y relaciones necesarias para soportar las Reglas de Negocio.
 - `src/test/resources/features/HU-01.feature`: specificación ejecutable que detalla los criterios de aceptación para la reserva de salas, incluyendo validaciones de cupo, orden de llegada y restricciones de duplicidad.
 - `src/test/resources/features/HU-03.feature`: Escenarios Gherkin para el flujo de cancelación y liberación automática de recursos.
