@@ -13,12 +13,12 @@
 Cubre el ciclo de vida de una reserva de sala de estudio desde su creación
 hasta su resolución por uso efectivo, cancelación o ausencia.
 
-**Incluye:** salas, turnos, reservas e historial de estados.
+**Incluye:** salas, turnos, estudiantes, reservas e historial de estados.
 
+## Fuera de alcance y exclusiones
+- **Excluye:** autenticación de usuarios (RN-08), personal como entidad del dominio,
+lógica de penalizaciones (D-02), navegación de UI.
 
-## Fuera de alcance y exclusiones 
-- **Excluye:** autenticación de usuarios (RN-08), estudiantes y personal
-como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 ---
 
 ## Inputs usados
@@ -46,6 +46,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 | :--- | :--- | :--- |
 | `Sala` | HU-01, RF-08 | Recurso físico con nombre y capacidad máxima definida |
 | `Turno` | HU-01, RN-02 | Intervalo de tiempo asociado a una sala; unidad reservable |
+| `Estudiante` | HU-01, HU-03, HU-04, RN-10 | Identificador persistido del solicitante de una reserva |
 | `Reserva` | HU-01, HU-03, HU-04 | Transacción central que vincula un estudiante con un turno |
 | `HistorialEstado` | HU-04, RN-06, RN-09 | Registro persistido de cada transición de estado de una reserva |
 
@@ -57,6 +58,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 | :--- | :--- | :--- |
 | `Sala` | `codigo {id}`, `nombre`, `capacidadMaxima` | RF-08, HU-01 ("Sala de Multimedia A", cap. 6) |
 | `Turno` | `fecha`, `horaInicio`, `horaFin` | RN-02, HU-01 (27/04/2026 10:00 a 11:00) |
+| `Estudiante` | `legajo {id}` | HU-04 (EST-1042, EST-2087), RN-10 |
 | `Reserva` | `codigo {id}`, `estado`, `fechaCreacion` | RN-03, HU-01, HU-03 (RES-0892, "confirmada") |
 | `HistorialEstado` | `fechaRegistro`, `estado` | HU-04, RN-06, RN-09 ("presente", "ausente", "cancelada") |
 
@@ -68,6 +70,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 | :--- | :--- | :--- |
 | `Sala` tiene `Turno` | 1 a 0..* | Una sala expone múltiples bloques horarios (RN-02) |
 | `Turno` agrupa `Reserva` | 1 a 0..* | Un turno acumula reservas hasta agotar la capacidad de la sala (RN-01) |
+| `Estudiante` posee `Reserva` | 1 a 0..* | Un estudiante puede tener múltiples reservas en distintos turnos (RN-10) |
 | `Reserva` registra `HistorialEstado` | 1 a 1..* | Toda reserva tiene al menos un estado desde su creación (RN-06, RN-09) |
 
 ---
@@ -86,15 +89,20 @@ registrar múltiples transiciones con su timestamp. Soporta RN-06
 (trazabilidad de inasistencias) y RN-09 (marcado automático de ausencia
 al finalizar el turno sin check-in).
 
-**Actores excluidos del modelo:**
-Estudiante y Personal no son entidades del dominio. El sistema delega
-la identidad al sistema institucional (RN-08). Aparecen únicamente
-como actores en las historias y escenarios Gherkin.
+**`Estudiante` como entidad del dominio:**
+Aunque la autenticación se delega al sistema institucional (RN-08),
+el sistema necesita persistir la identidad del estudiante para vincularla
+a sus reservas. Esto soporta la validación de unicidad por turno (RN-10),
+la restricción de cancelación por titular (HU-03) y la trazabilidad
+de ausencias (RN-06). Se modela con un único atributo identificador: `legajo`.
+El Personal no se modela como entidad porque el sistema no necesita
+persistir su identidad — solo actúa como actor operativo.
 
 **Estados de `Reserva` e `HistorialEstado`:**
 El atributo `estado` se mantiene como valor libre en ambas entidades.
 Los valores válidos del dominio son `confirmada`, `cancelada`, `presente`
 y `ausente`, definidos por los escenarios de HU-01, HU-03 y HU-04.
+
 ---
 
 ## Trazabilidad
@@ -103,6 +111,7 @@ y `ausente`, definidos por los escenarios de HU-01, HU-03 y HU-04.
 | :--- | :--- | :--- |
 | `Sala` | HU-01 | RF-08, RN-01, RN-02 |
 | `Turno` | HU-01 | RN-02 |
+| `Estudiante` | HU-01, HU-03, HU-04 | RN-10, RN-06 |
 | `Reserva` | HU-01, HU-03, HU-04 | RN-01, RN-03, RN-04, RN-06, RN-10 |
 | `HistorialEstado` | HU-04 | RN-06, RN-09 |
 
@@ -115,6 +124,7 @@ y `ausente`, definidos por los escenarios de HU-01, HU-03 y HU-04.
 | D-02 | ¿Se aplicarán penalizaciones por ausencias acumuladas? | Abierta. El `HistorialEstado` está modelado para soportarlo cuando coordinación defina el umbral. |
 
 ---
+
 ## Subset permitido de PlantUML
 
 Usar `docs/requisitos/modelo-dominio.puml` con un diagrama de clases conceptual al estilo Larman. El subset permitido para este artefacto es:
@@ -133,6 +143,7 @@ Queda prohibido:
 - `skinparam`
 - interfaces, packages o estereotipos técnicos
 - vocabulario de implementación como `Controller`, `Service`, `Repository`, `DTO`, `API`, `endpoint`, `tabla`, `screen` o `UI`
+
 ## Diagrama
 
 ![Modelo de dominio](modelo-dominio.png)

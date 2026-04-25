@@ -16,6 +16,10 @@ class Turno {
   /cupoDisponible
 }
 
+class Estudiante {
+  legajo {id}
+}
+
 class Reserva {
   codigo {id}
   estado
@@ -30,6 +34,7 @@ class HistorialEstado {
 '' Relaciones persistidas
 Sala "1" -- "0..*" Turno : tiene
 Turno "1" -- "0..*" Reserva : agrupa
+Estudiante "1" -- "0..*" Reserva : posee
 Reserva "1" -- "1..*" HistorialEstado : registra
 
 @enduml
