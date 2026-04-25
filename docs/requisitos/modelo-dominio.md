@@ -34,7 +34,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 
 | Historia | Recorte que aporta al modelo | Escenarios o evidencia usada |
 | :--- | :--- | :--- |
-| **HU-01** | Estructura de recursos y validación de capacidad | Reserva exitosa, capacidad máxima, FCFS |
+| **HU-01** | Estructura de recursos y validación de capacidad | Reserva exitosa, capacidad máxima, FCFS y reserva duplicada |
 | **HU-03** | Ciclo de vida y liberación de cupo | Cancelación, liberación de turno, estados |
 | **HU-04** | Trazabilidad de asistencia y ausencia automática | Check-in, marcado automático, historial |
 
@@ -103,7 +103,7 @@ y `ausente`, definidos por los escenarios de HU-01, HU-03 y HU-04.
 | :--- | :--- | :--- |
 | `Sala` | HU-01 | RF-08, RN-01, RN-02 |
 | `Turno` | HU-01 | RN-02 |
-| `Reserva` | HU-01, HU-03, HU-04 | RN-01, RN-03, RN-04, RN-06 |
+| `Reserva` | HU-01, HU-03, HU-04 | RN-01, RN-03, RN-04, RN-06, RN-10 |
 | `HistorialEstado` | HU-04 | RN-06, RN-09 |
 
 ---

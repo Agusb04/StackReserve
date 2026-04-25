@@ -4,7 +4,7 @@
 
 | ID | Historia | Evidencia principal | Épica opcional |
 |----|----------|--------------------|----------------|
-| HU-01 | Como estudiante, quiero reservar un turno en una sala disponible, para garantizar mi lugar de estudio sin depender del personal | RF-02, RF-03, RF-08, RN-01, RN-02 | Gestión de reservas |
+| HU-01 | Como estudiante, quiero reservar un turno en una sala disponible, para garantizar mi lugar de estudio sin depender del personal | RF-02, RF-03, RF-08, RF-11, RN-01, RN-02, RN-10  | Gestión de reservas |
 | HU-02 | Como estudiante, quiero consultar la disponibilidad de salas en tiempo real, para saber qué opciones tengo antes de decidir si reservo | RF-01, RN-02 | Gestión de reservas |
 | HU-03 | Como estudiante, quiero cancelar una reserva que ya tengo confirmada, para liberar el turno y que otro estudiante pueda usarlo | RF-05, RN-04 | Gestión de reservas |
 | HU-04 | Como personal de biblioteca, quiero registrar la asistencia de un estudiante al inicio de su turno, para validar el uso efectivo de la sala y contabilizar ausencias | RF-10, RN-05, RN-06 | Operación del mostrador |

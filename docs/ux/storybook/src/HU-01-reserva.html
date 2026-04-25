@@ -199,7 +199,7 @@
 
         if (usuariosConReserva.includes(usuario)) {
           fb.className = "alert alert-error";
-          fb.innerText = "Ya posees una reserva para este horario. (RN-10)";
+          fb.innerText = "Ya posees una reserva para este horario. No puedes reservar dos salas simultáneamente. (RN-10)";
           addLog(usuario, "RECHAZADA", "Error RN-10: Reserva duplicada.");
           return;
         }
