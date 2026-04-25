@@ -40,7 +40,7 @@ En la capa externa se ubican los servicios y recursos tecnológicos que soportan
 | I-04 | Soporte / IT                  | Our System        | Mantiene el sistema operativo                                 | Necesario para funcionamiento                                   | inferido   |
 | I-05 | Institución académica          | Containing System | Define políticas generales                                    | Contexto organizacional                                          | inferido   |
 | I-06 | Normativas internas            | Wider Environment| Regulan uso de salas                                          | Condicionan reglas del sistema                                   | inferido   |
-| I-07 | Servicios de mensajería        | Wider Environment | Canal actual de comunicación                                  | Puede integrarse o eliminarse                                   | explícito  |
+| I-07 | Servicios de mensajería        | Wider Environment | Canal actual de comunicación                                  | Puede integrarse o eliminarse                                   | dudoso  |
 | I-08 | Servicios de notificación      | Wider Environment | Envío de mensajes (email, etc.)                               | Soporte de comunicación                                         | inferido   |
 | I-09 | Infraestructura tecnológica    | Wider Environment | Soporte técnico (servidores, red)                             | Necesaria para operación                                        | inferido   |
 
@@ -58,6 +58,7 @@ En la capa externa se ubican los servicios y recursos tecnológicos que soportan
 
 - Validar interesados con actores reales  
 - Confirmar roles técnicos  
+- confirmar si se va a integrar servicios de mensajeria como whatsapp
 - Evaluar integraciones externas  
 
 ---

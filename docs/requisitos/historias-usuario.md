@@ -18,7 +18,7 @@
 
 | ID | Motivo de prioridad | Feature esperado |
 |----|--------------------|------------------|
-| HU-01 | Núcleo del sistema. Concentra reglas críticas como evitar superposición y gestionar disponibilidad | `src/test/resources/features/HU-02.feature` |
+| HU-01 | Núcleo del sistema. Concentra reglas críticas como evitar superposición y gestionar disponibilidad | `src/test/resources/features/HU-01.feature` |
 | HU-03 | Completa el ciclo del turno desde el lado del estudiante y permite liberar recursos | `src/test/resources/features/HU-03.feature` |
 | HU-04 | Cierra el ciclo operativo y habilita trazabilidad y análisis de ausencias | `src/test/resources/features/HU-04.feature` |
 

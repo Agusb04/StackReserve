@@ -24,7 +24,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 ## Inputs usados
 
 - `docs/requisitos/requisitos.md`
-- `src/test/resources/features/HU-02.feature`
+- `src/test/resources/features/HU-01.feature`
 - `src/test/resources/features/HU-03.feature`
 - `src/test/resources/features/HU-04.feature`
 
@@ -56,7 +56,7 @@ como entidades del dominio, lógica de penalizaciones (D-02), navegación de UI.
 | Entidad | Atributos | Evidencia |
 | :--- | :--- | :--- |
 | `Sala` | `codigo {id}`, `nombre`, `capacidadMaxima` | RF-08, HU-01 ("Sala de Multimedia A", cap. 6) |
-| `Turno` | `fecha`, `horaInicio`, `horaFin` | RN-02, HU-02 (27/04/2026 10:00 a 11:00) |
+| `Turno` | `fecha`, `horaInicio`, `horaFin` | RN-02, HU-01 (27/04/2026 10:00 a 11:00) |
 | `Reserva` | `codigo {id}`, `estado`, `fechaCreacion` | RN-03, HU-01, HU-03 (RES-0892, "confirmada") |
 | `HistorialEstado` | `fechaRegistro`, `estado` | HU-04, RN-06, RN-09 ("presente", "ausente", "cancelada") |
 

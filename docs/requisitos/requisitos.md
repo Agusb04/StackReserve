@@ -107,7 +107,7 @@ Un sistema digital centralizado de gestión de turnos y reservas de salas que pe
 | RN-07 |  El sistema debe asignar los turnos bajo el principio de "primero en llegar, primero en ser servido" (First-Come, First-Served), sin distinción de jerarquías entre estudiantes. | Simplifica la lógica de asignación al no requerir roles de prioridad académica | Entrevista P15 |
 |RN-08	|El acceso al sistema de reservas requiere una autenticación válida a través del sistema institucional.|Define la frontera del sistema y la responsabilidad de la gestión de identidades.|	Entrevista P16|
 |RN-09 | Si al finalizar el turno no se registró check-in, el sistema marca la reserva como ausente automáticamente.| Llevar registro de ausentes para futuras penalizaciones | Entrevista P17, Entrevista P14
-| RN-10| 	Unicidad de reserva por turno|	El sistema debe impedir que un estudiante posea más de una reserva confirmada para el mismo bloque horario| 	Entrevista P15 (Igualdad de condiciones) y P04 (Maximizar aprovechamiento).
+| RN-10 | El sistema debe impedir que un estudiante posea más de una reserva confirmada para el mismo bloque horario | Requiere validación de reservas previas del usuario antes de confirmar una nueva | Entrevista P15, P04. Decisión de diseño |
 ---
 
 ## Trazabilidad a entrevista
