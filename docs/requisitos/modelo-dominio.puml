@@ -1,0 +1,35 @@
+@startuml modelo-dominio
+hide circle
+hide methods
+hide empty members
+
+class Sala {
+  codigo {id}
+  nombre
+  capacidadMaxima
+}
+
+class Turno {
+  fecha
+  horaInicio
+  horaFin
+  /cupoDisponible
+}
+
+class Reserva {
+  codigo {id}
+  estado
+  fechaCreacion
+}
+
+class HistorialEstado {
+  fechaRegistro
+  estado
+}
+
+'' Relaciones persistidas
+Sala "1" -- "0..*" Turno : tiene
+Turno "1" -- "0..*" Reserva : agrupa
+Reserva "1" -- "1..*" HistorialEstado : registra
+
+@enduml
