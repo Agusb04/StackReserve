@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Refinar el backend y la documentación final del proyecto, fortaleciendo UX a nivel de prototipo, modelo ER y esquema SQL versionado.
+Refinar el backend y la documentación final del proyecto, fortaleciendo UX a nivel de prototipo, modelo ER y esquema SQL versionado. El refinamiento debe seguir reflejando el recorte priorizado del ejercicio 3, incluyendo la consulta de disponibilidad de salas y la cancelación de reservas.
 
 ## Operatoria
 
@@ -21,4 +21,4 @@ Refinar el backend y la documentación final del proyecto, fortaleciendo UX a ni
 
 ## Aclaración
 
-No se pide desarrollar Front/UI dentro del repositorio. La parte UX se trabaja sobre prototipos y refinamientos documentados.
+No se pide desarrollar Front/UI dentro del repositorio. La parte UX se trabaja sobre prototipos y refinamientos documentados, siempre en continuidad con el backend y el recorte priorizado del ejercicio 3.
