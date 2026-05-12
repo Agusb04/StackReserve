@@ -39,7 +39,7 @@ Transformar los requisitos del ejercicio 1 en backlog trazable, historias priori
 - Usá valores concretos dentro de cada escenario: nombres, fechas, códigos, estados y cantidades del dominio, no placeholders genéricos.
 - No describas en `Dado` datos que el sistema produce como resultado del caso: esos datos van en `Entonces` o en una tabla de salida.
 - Si el mismo flujo tiene contextos diferentes, modelalo con `Esquema del escenario` + `Ejemplos` o con `Data Table`.
-- Los actores humanos se describen como actores de historias y escenarios, no como entidades del dominio.
+- Los actores humanos se describen como actores de historias y escenarios. No modeles por inercia a cada actor humano como clase del dominio; modelá personas o roles solo cuando formen parte real del negocio, y si el sistema necesita recordarlos, hacelo con relaciones conceptuales, no con campos técnicos como `idestudiante` dentro de otra entidad.
 - Las relaciones del modelo deben nombrar vínculos persistidos, no acciones de proceso.
 - El modelo de dominio debe ser conceptual, trazable a las historias priorizadas y escrito con PlantUML como archivo editable.
 - El prototipo debe estar hecho con Storybook HTML y representar pantallas, estados y transiciones del recorrido principal, no pantallas aisladas.

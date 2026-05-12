@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Construir la base de descubrimiento y requisitos del TPI a partir de una entrevista guiada contra el caso común `biblioteca/turnos`.
+Construir la base de descubrimiento y requisitos del sistema de gestion de turnos a salas de una biblioteca a partir de una entrevista guiada contra el caso comun `biblioteca/turnos`.
 
 ## Operatoria
 

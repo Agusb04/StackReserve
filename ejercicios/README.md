@@ -1,6 +1,6 @@
 # Ejercicios
 
-Los enunciados del TPI viven en esta carpeta.
+Los enunciados del sistema viven en esta carpeta.
 
 La operatoria general es:
 

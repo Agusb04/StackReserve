@@ -1,6 +1,6 @@
-# FIUBA IS1 2026 1C - TPI
+# FIUBA IS1 2026 1C - Biblioteca Turnos
 
-Repositorio template para la assignment individual `tpi` de GitHub Classroom.
+Repositorio template para la implementacion end-to-end del sistema de gestion de turnos a salas de una biblioteca.
 
 Cada estudiante trabaja durante toda la cursada sobre su propio repositorio derivado de este template. El repositorio es acumulativo: no se recrea por entrega, sino que evoluciona durante los cuatro ejercicios del Trabajo Práctico Individual.
 
@@ -32,6 +32,7 @@ Los estudiantes crean y mantienen los artefactos vivos derivados de esos templat
 - Mantener nombres estables para los artefactos vivos: la evolución queda en git, no en el filename.
 - Antes de hacer push, ejecutar el preflight del ejercicio en curso.
 - En `ejercicio-03` y `ejercicio-04`, además del preflight conviene correr `./gradlew check` localmente de forma frecuente.
+- Entorno mínimo para el backend: JDK 21. No hace falta base de datos ni variables de entorno adicionales para el ejercicio 3; el scaffold usa Gradle Wrapper y persistencia en memoria.
 
 ## Feedback
 
