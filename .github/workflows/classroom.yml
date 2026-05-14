@@ -24,10 +24,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python (preflight con calidad de código)
+        if: github.ref_name == 'ejercicio-03' || github.ref_name == 'ejercicio-04'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Bootstrap quality tools (google-java-format + Semgrep)
+        if: github.ref_name == 'ejercicio-03' || github.ref_name == 'ejercicio-04'
+        run: python3 scripts/bootstrap_quality_tools.py
 
       - name: Repository preflight
-        run: bash .github/classroom/run_preflight.sh
+        run: bash .github/classroom/ci_preflight_with_summary.sh
 
       - name: Exercise deadline
         continue-on-error: true

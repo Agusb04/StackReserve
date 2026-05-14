@@ -8,3 +8,8 @@ bin/
 *.iml
 __pycache__/
 *.pyc
+
+# Herramientas de calidad ejercicio-03 (bootstrap local / CI; no versionar)
+tools/google-java-format.jar
+tools/quality-venv/
+tools/quality-tools.env

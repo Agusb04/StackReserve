@@ -15,7 +15,7 @@ Cada estudiante trabaja durante toda la cursada sobre su propio repositorio deri
 - `docs/arquitectura/`: ADRs y diagramas C4.
 - `src/`: implementación backend Spring Boot.
 - `db/`: modelo ER y esquema SQL versionado.
-- `scripts/`: preflights locales por ejercicio.
+- `scripts/`: preflights por ejercicio; `bootstrap_quality_tools.py` + `bootstrap-quality-tools.sh` preparan `tools/quality-venv/` (Semgrep) y `tools/google-java-format.jar` de forma portable (solo Python 3 + stdlib).
 - `.github/workflows/`: validaciones automáticas.
 
 ## Regla de trabajo
@@ -30,8 +30,8 @@ Los estudiantes crean y mantienen los artefactos vivos derivados de esos templat
 - No modificar archivos docentes ni archivos `*-template`.
 - Copiar o derivar cada template a su archivo vivo sin el sufijo `-template`.
 - Mantener nombres estables para los artefactos vivos: la evolución queda en git, no en el filename.
-- Antes de hacer push, ejecutar el preflight del ejercicio en curso.
-- En `ejercicio-03` y `ejercicio-04`, además del preflight conviene correr `./gradlew check` localmente de forma frecuente.
+- Antes de hacer push, ejecutar el preflight del ejercicio en curso (`scripts/preflight-ejercicio-0X.sh`; requiere **bash**, p. ej. Git Bash en Windows). En **ejercicio-03** y **ejercicio-04** el preflight ejecuta `python3 scripts/bootstrap_quality_tools.py` (JAR de \`google-java-format\` + venv con Semgrep bajo \`tools/\`), luego `./gradlew check`, formato y Semgrep (\`config/semgrep/ejercicio-03.yml\` o \`ejercicio-04.yml\`) vía \`tools/quality-tools.env\`. Requiere **Python 3** y **JDK 21**. En GitHub Actions, si el preflight falla, el job agrega un **resumen** con pasos concretos para reproducir el error en local.
+- En **ejercicio-01** y **ejercicio-02** los preflights no usan Gradle ni Semgrep; seguí las instrucciones del resumen del job o del log.
 - Entorno mínimo para el backend: JDK 21. No hace falta base de datos ni variables de entorno adicionales para el ejercicio 3; el scaffold usa Gradle Wrapper y persistencia en memoria.
 
 ## Feedback
