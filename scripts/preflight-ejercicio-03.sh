@@ -58,10 +58,12 @@ def _feature_inventory():
     )
 
 
-namespace["_markdown_table_rows"] = _markdown_table_rows
-namespace["_feature_inventory"] = _feature_inventory
+main_fn = namespace["main"]
+main_globals = main_fn.__globals__
+main_globals["_markdown_table_rows"] = _markdown_table_rows
+main_globals["_feature_inventory"] = _feature_inventory
 sys.argv = [str(checker_path), "ejercicio-03"]
-namespace["main"]()
+main_fn()
 PY
 ./gradlew check
 
