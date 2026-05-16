@@ -79,6 +79,8 @@ Relevar el proceso actual de gestión de turnos y reservas en la biblioteca, ide
 - Se ratifica que el sistema no implementará lógicas de prioridad por tipo de usuario en esta fase, garantizando igualdad de acceso para todos los estudiantes.
 - Se decide utilizar el sistema institucional exclusivamente para la autenticación de usuarios (Login), manteniendo la gestión de turnos como un módulo independiente para evitar dependencias técnicas no definidas.
 - Que el personal haga un check in del alumno
+- Se confirma que WhatsApp quedará excluido como canal válido para reservas. Los turnos únicamente serán válidos si están registrados en la plataforma oficial. Se contempla una transición gradual con comunicación a usuarios.
+
 ---
 
 ## Confirmaciones
@@ -104,9 +106,10 @@ Relevar el proceso actual de gestión de turnos y reservas en la biblioteca, ide
 ---
 
 ## Pendientes
-- Definir canales de notificación definitivos: Consensuar si se descartará totalmente la mensajería informal (WhatsApp).
-- Establecer reglas ante ausencias (penalizaciones, restricciones).
+
+- Canales de notificación: Coordinación confirma que el objetivo es la exclusión de WhatsApp. Queda pendiente definir el plan de transición y comunicarlo a usuarios antes del lanzamiento.
+- Penalizaciones por ausencias: Se confirma la intención de aplicar restricciones temporales ante ausencias reiteradas sin cancelación previa. Pendiente: definir el umbral numérico de ausencias y la duración de la restricción antes de la próxima iteración.
 - Determinar si existen prioridades entre usuarios.
-- Evaluar integración con sistemas existentes.
+- Evaluar integración con sistemas existentes: solo se usara para la autenticacion
 - Coordinación debe definir el número exacto de ausencias permitidas y la duración de la restricción antes de la próxima iteración.
 - Validar la necesidad de recordatorios automáticos con mayor evidencia.

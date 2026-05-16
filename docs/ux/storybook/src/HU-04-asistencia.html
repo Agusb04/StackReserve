@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HU-04 - Registro de Asistencia</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1120;
+        --surface: rgba(15, 23, 42, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.16);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #f97316;
+        --success: #22c55e;
+        --error: #ef4444;
+        --info: #3b82f6;
+        --warning: #f59e0b;
+        --present: #10b981;
+        --absent: #dc2626;
+        --chip: rgba(249, 115, 22, 0.14);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.85)), var(--bg);
+        padding-bottom: 50px;
+      }
+
+      .story { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+      .hero {
+        display: grid; gap: 16px; margin-bottom: 24px; padding: 28px;
+        border-radius: 24px; background: var(--surface); border: 1px solid var(--surface-border);
+      }
+
+      .chip {
+        display: inline-flex; align-items: center; padding: 6px 12px;
+        border-radius: 999px; background: var(--chip); color: #fdba74;
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+      }
+
+      .grid { display: grid; gap: 20px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .card { grid-column: span 12; padding: 24px; border-radius: 20px; background: var(--surface); border: 1px solid var(--surface-border); }
+      .half { grid-column: span 6; }
+      @media (max-width: 900px) { .half { grid-column: span 12; } }
+
+      .app-container {
+        background: #020617; border-radius: 16px; padding: 20px; border: 1px solid #1e293b;
+      }
+
+      .reserva-row {
+        background: #1e293b; padding: 14px 16px; border-radius: 12px; margin-bottom: 10px;
+        border: 2px solid transparent; transition: border-color 0.3s, opacity 0.3s;
+        display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+      }
+      .reserva-row.presente { border-color: var(--present); }
+      .reserva-row.ausente { border-color: var(--absent); opacity: 0.65; }
+      .reserva-row.confirmada { border-color: var(--info); }
+
+      .reserva-info { font-size: 13px; }
+      .reserva-info strong { display: block; margin-bottom: 2px; }
+      .reserva-info span { color: var(--muted); font-size: 12px; }
+
+      .badge {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+      }
+      .badge-confirmada { background: rgba(59,130,246,0.2); color: #93c5fd; }
+      .badge-presente { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+      .badge-ausente { background: rgba(220,38,38,0.2); color: #fca5a5; }
+
+      select {
+        width: 100%; padding: 12px; background: #0f172a; color: white;
+        border-radius: 10px; border: 1px solid var(--accent); margin-bottom: 20px;
+      }
+
+      button {
+        background: var(--present); color: white; border: none; padding: 9px 14px;
+        border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;
+        transition: filter 0.2s; white-space: nowrap;
+      }
+      button:hover { filter: brightness(1.15); }
+      button.danger { background: var(--absent); }
+      button.neutral { background: #475569; width: 100%; margin-top: 12px; }
+      button:disabled { opacity: 0.35; cursor: not-allowed; filter: none; }
+
+      .history-log {
+        background: #000; padding: 12px; border-radius: 10px; font-family: monospace;
+        font-size: 11px; height: 200px; overflow-y: auto; border: 1px solid #1e293b;
+      }
+
+      .alert {
+        padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px;
+        border: 1px solid transparent; font-weight: 500; display: none;
+      }
+      .alert-success { background: rgba(34, 197, 94, 0.1); color: #86efac; border-color: var(--success); display: block; }
+      .alert-error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: var(--error); display: block; }
+      .alert-warning { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: var(--warning); display: block; }
+
+      .gherkin-box {
+        font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);
+        padding: 16px; border-radius: 12px; color: var(--muted); white-space: pre-wrap;
+      }
+
+      .clock-display {
+        text-align: center; padding: 12px; background: #0f172a; border-radius: 10px;
+        margin-bottom: 16px; font-family: monospace; font-size: 18px; color: var(--warning);
+        border: 1px solid #1e293b;
+      }
+
+      .tabla-historial {
+        width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px;
+      }
+      .tabla-historial th {
+        text-align: left; color: var(--muted); padding: 6px 8px;
+        border-bottom: 1px solid var(--surface-border); font-weight: 600;
+      }
+      .tabla-historial td { padding: 8px; border-bottom: 1px solid rgba(148,163,184,0.08); }
+    </style>
+  </head>
+  <body>
+    <article class="story">
+      <header class="hero">
+        <div class="chip">HU-04</div>
+        <h1>Registro de Asistencia al Inicio del Turno</h1>
+        <p class="muted">Simulador interactivo para validar check-in manual (RN-06), ausencia automática al vencer el turno (RN-09) y trazabilidad en HistorialEstado.</p>
+      </header>
+
+      <section class="grid">
+        <section class="card">
+          <h2>Configuración de Escenario Gherkin</h2>
+          <select id="scenario-picker" onchange="initEscenario()">
+            <option value="checkin">Escenario: Check-in exitoso al inicio del turno</option>
+            <option value="ya-procesada">Escenario: Intento de registrar asistencia en reserva ya procesada</option>
+            <option value="ausencia-auto">Escenario: Marcado automático de ausencia al finalizar turno sin check-in</option>
+            <option value="historial">Esquema del escenario: Historial refleja el estado final de cada reserva</option>
+          </select>
+          <div id="gherkin-text" class="gherkin-box"></div>
+        </section>
+
+        <section class="card half">
+          <h2>Simulador de Aplicación</h2>
+          <div class="app-container">
+            <div id="clock" class="clock-display">27/04/2026 10:00 — Turno activo</div>
+            <div id="reservas-panel"></div>
+            <div id="feedback" class="alert" style="display:none"></div>
+          </div>
+        </section>
+
+        <section class="card half">
+          <h2>Historial (Entidad: HistorialEstado)</h2>
+          <div id="log" class="history-log"></div>
+          <div style="margin-top:20px;">
+            <h3>Consistencia de Dominio</h3>
+            <ul style="font-size: 13px; color: var(--muted);">
+              <li><strong>RN-06:</strong> Toda inasistencia se registra en el historial.</li>
+              <li><strong>RN-09:</strong> El sistema marca ausente al vencer el turno sin check-in.</li>
+              <li><strong>Estados válidos:</strong> confirmada → presente | ausente.</li>
+              <li><strong>Personal:</strong> Solo actúa como actor operativo (no se persiste).</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </article>
+
+    <script>
+      const escenarios = {
+        checkin: {
+          text: `Escenario: Check-in exitoso al inicio del turno
+Dado que Ana Pérez está autenticada como personal de biblioteca
+Y que existen las siguientes reservas confirmadas
+  para el 27/04/2026 de 10:00 a 11:00:
+  | RES-0892 | Lucía Gómez   | EST-1042 | Sala A |
+  | RES-0901 | Martín Torres | EST-2087 | Sala B |
+Y que la reserva RES-0892 no tiene asistencia registrada
+Y que el horario actual es 27/04/2026 10:00
+Cuando Ana Pérez registra la asistencia de la reserva RES-0892
+Entonces se actualiza la reserva RES-0892 con estado "presente"
+Y se registra un nuevo estado "presente" en el historial
+Y se muestra el mensaje de asistencia registrada.`,
+          render: renderCheckin
+        },
+        'ya-procesada': {
+          text: `Escenario: Intento de registrar asistencia en una reserva ya procesada
+Dado que la reserva RES-0892 ya tiene estado "presente"
+Cuando Ana Pérez intenta registrar nuevamente
+  la asistencia de la reserva RES-0892
+Entonces se rechaza la acción
+Y se muestra el mensaje
+  "La reserva RES-0892 ya tiene asistencia registrada".`,
+          render: renderYaProcesada
+        },
+        'ausencia-auto': {
+          text: `Escenario: Marcado automático de ausencia al finalizar turno sin check-in
+Dado que la reserva RES-0901 tiene estado "confirmada"
+Y que el turno del 27/04/2026 de 10:00 a 11:00 ha finalizado
+Cuando se procesan los turnos finalizados sin check-in
+Entonces se marca la reserva RES-0901 con estado "ausente"
+Y se registra un nuevo estado "ausente" en el historial.`,
+          render: renderAusenciaAuto
+        },
+        historial: {
+          text: `Esquema del escenario: Historial refleja correctamente el estado final
+Dado que la reserva "<codigo_reserva>" tiene estado "<estado_final>"
+Cuando se consulta el historial de la reserva "<codigo_reserva>"
+Entonces el historial muestra un estado "<estado_final>"
+Y la fecha y hora del turno es "27/04/2026 10:00"
+
+Ejemplos:
+| codigo_reserva | estado_final |
+| RES-0892       | presente     |
+| RES-0901       | ausente      |`,
+          render: renderHistorial
+        }
+      };
+
+      function initEscenario() {
+        document.getElementById('log').innerHTML = '';
+        hideFeedback();
+        document.getElementById('clock').innerText = '27/04/2026 10:00 — Turno activo';
+        document.getElementById('clock').style.color = 'var(--warning)';
+        const scn = document.getElementById('scenario-picker').value;
+        document.getElementById('gherkin-text').innerText = escenarios[scn].text;
+        escenarios[scn].render();
+      }
+
+      function hideFeedback() {
+        const fb = document.getElementById('feedback');
+        fb.style.display = 'none';
+        fb.className = 'alert';
+      }
+
+      function showFeedback(tipo, msg) {
+        const fb = document.getElementById('feedback');
+        fb.className = `alert alert-${tipo}`;
+        fb.innerText = msg;
+        fb.style.display = 'block';
+      }
+
+      function addLog(codigo, estado, detalle) {
+        const log = document.getElementById('log');
+        const color = estado === 'presente' ? '#6ee7b7'
+          : estado === 'ausente' ? '#fca5a5'
+          : estado === 'RECHAZADA' ? '#fcd34d' : '#93c5fd';
+        log.innerHTML = `<div style="color:${color}">[${new Date().toLocaleTimeString()}] <b>${estado.toUpperCase()}</b> — ${codigo}: ${detalle}</div>` + log.innerHTML;
+      }
+
+      function reservaRow(codigo, nombre, legajo, sala, estado, btnHtml) {
+        return `
+          <div id="row-${codigo}" class="reserva-row ${estado}">
+            <div class="reserva-info">
+              <strong>${nombre} <span style="color:var(--muted);font-weight:400;font-size:11px">${legajo}</span></strong>
+              <span>${codigo} · ${sala} · 27/04/2026 10:00–11:00</span>
+              <div style="margin-top:6px"><span id="badge-${codigo}" class="badge badge-${estado}">${estado}</span></div>
+            </div>
+            <div id="btn-${codigo}">${btnHtml}</div>
+          </div>`;
+      }
+
+      function renderCheckin() {
+        document.getElementById('reservas-panel').innerHTML =
+          reservaRow('RES-0892', 'Lucía Gómez', 'EST-1042', 'Sala A', 'confirmada',
+            `<button onclick="ejecutarCheckin('RES-0892','Lucía Gómez','EST-1042','Sala A')">Check-in</button>`) +
+          reservaRow('RES-0901', 'Martín Torres', 'EST-2087', 'Sala B', 'confirmada',
+            `<button onclick="ejecutarCheckin('RES-0901','Martín Torres','EST-2087','Sala B')">Check-in</button>`);
+      }
+
+      function ejecutarCheckin(codigo, nombre, legajo, sala) {
+        const row = document.getElementById(`row-${codigo}`);
+        row.className = 'reserva-row presente';
+        document.getElementById(`badge-${codigo}`).className = 'badge badge-presente';
+        document.getElementById(`badge-${codigo}`).innerText = 'presente';
+        document.getElementById(`btn-${codigo}`).innerHTML = '<button disabled>✓ Registrado</button>';
+        showFeedback('success', `Asistencia registrada: ${nombre} (${legajo}), ${sala}, 27/04/2026 10:00`);
+        addLog(codigo, 'presente', `Check-in de ${nombre} registrado por personal de biblioteca.`);
+      }
+
+      function renderYaProcesada() {
+        document.getElementById('reservas-panel').innerHTML =
+          reservaRow('RES-0892', 'Lucía Gómez', 'EST-1042', 'Sala A', 'presente',
+            `<button onclick="ejecutarCheckinDuplicado()">Check-in (otra vez)</button>`);
+      }
+
+      function ejecutarCheckinDuplicado() {
+        showFeedback('error', 'La reserva RES-0892 ya tiene asistencia registrada.');
+        addLog('RES-0892', 'RECHAZADA', 'Intento de doble registro de asistencia. Estado ya es presente.');
+      }
+
+      function renderAusenciaAuto() {
+        document.getElementById('reservas-panel').innerHTML =
+          reservaRow('RES-0892', 'Lucía Gómez', 'EST-1042', 'Sala A', 'presente',
+            `<span style="color:var(--muted);font-size:12px">✓ Check-in realizado</span>`) +
+          reservaRow('RES-0901', 'Martín Torres', 'EST-2087', 'Sala B', 'confirmada',
+            `<button class="danger" disabled>Sin check-in</button>`);
+        document.getElementById('reservas-panel').innerHTML +=
+          `<button class="neutral" onclick="ejecutarAusenciaAuto()">⏰ Simular fin de turno (11:01) → procesar ausencias</button>`;
+      }
+
+      function ejecutarAusenciaAuto() {
+        document.getElementById('clock').innerText = '27/04/2026 11:01 — Turno finalizado';
+        document.getElementById('clock').style.color = 'var(--error)';
+        const row = document.getElementById('row-RES-0901');
+        row.className = 'reserva-row ausente';
+        document.getElementById('badge-RES-0901').className = 'badge badge-ausente';
+        document.getElementById('badge-RES-0901').innerText = 'ausente';
+        document.getElementById('btn-RES-0901').innerHTML = '<span style="color:var(--absent);font-size:12px">Marcado automáticamente</span>';
+        showFeedback('warning', 'Turno finalizado. La reserva RES-0901 fue marcada como ausente automáticamente (RN-09).');
+        addLog('RES-0901', 'ausente', 'Marcado automático por sistema. Turno 10:00–11:00 finalizado sin check-in.');
+      }
+
+      function renderHistorial() {
+        document.getElementById('reservas-panel').innerHTML = `
+          <table class="tabla-historial">
+            <thead>
+              <tr>
+                <th>Código reserva</th>
+                <th>Estudiante</th>
+                <th>Estado final</th>
+                <th>Fecha/hora turno</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>RES-0892</td>
+                <td>Lucía Gómez (EST-1042)</td>
+                <td><span class="badge badge-presente">presente</span></td>
+                <td>27/04/2026 10:00</td>
+              </tr>
+              <tr>
+                <td>RES-0901</td>
+                <td>Martín Torres (EST-2087)</td>
+                <td><span class="badge badge-ausente">ausente</span></td>
+                <td>27/04/2026 10:00</td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="neutral" style="margin-top:16px" onclick="consultarHistorial('RES-0892','presente')">Consultar historial RES-0892</button>
+          <button class="neutral" style="margin-top:8px" onclick="consultarHistorial('RES-0901','ausente')">Consultar historial RES-0901</button>
+        `;
+      }
+
+      function consultarHistorial(codigo, estado) {
+        const color = estado === 'presente' ? 'success' : 'warning';
+        showFeedback(color, `Historial de ${codigo}: estado final "${estado}" registrado el 27/04/2026 a las 10:00.`);
+        addLog(codigo, estado, `Consulta de historial. Estado final verificado: ${estado}.`);
+      }
+
+      initEscenario();
+    </script>
+  </body>
+</html>

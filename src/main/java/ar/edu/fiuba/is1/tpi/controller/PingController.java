@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/health")
 public class PingController {
 
-    private final PingService pingService;
+  private final PingService pingService;
 
-    public PingController(PingService pingService) {
-        this.pingService = pingService;
-    }
+  public PingController(PingService pingService) {
+    this.pingService = pingService;
+  }
 
-    @GetMapping
-    public PingMessage health() {
-        return pingService.health();
-    }
+  @GetMapping
+  public PingMessage health() {
+    return pingService.health();
+  }
 }

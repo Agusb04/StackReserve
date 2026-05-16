@@ -131,7 +131,7 @@ Un sistema digital centralizado de gestión de turnos y reservas de salas que pe
 
 | ID   | Duda | Impacto | Próxima acción |
 |------|------|--------|---------------|
-| D-01 | Confirmación final de la exclusión de canales informales (WhatsApp). | Puede generar resistencia en los usuarios si no se comunica bien el cambio. | Validar con stakeholders |
+| D-01 | Confirmación final de la exclusión de canales informales (WhatsApp). | Puede generar resistencia en los usuarios si no se comunica bien el cambio. |  ahora hay una posición clara: el objetivo es la exclusión total, con posible transición gradual. Se cierra parcialmente con una decisión operativa. |
 | D-02 | ¿Se aplicarán penalizaciones por ausencias? | Impacta reglas de negocio | en proceso. Se definió la intención de aplicar restricciones por acumulación de ausencias (P14). Falta definir el umbral|
 | D-03 | ¿Existen prioridades entre usuarios? | Impacta lógica del sistema | Cerrada. Se confirmó que no existen prioridades formales (P15). El sistema tratará a todos los usuarios por igual en esta iteración.|
 | D-04 | ¿Se integrará con sistemas institucionales? | Impacta arquitectura | Cerrada. Se utilizará el sistema institucional únicamente para autenticación (P16). Otras integraciones académicas quedan fuera de alcance por falta de definición institucional. |

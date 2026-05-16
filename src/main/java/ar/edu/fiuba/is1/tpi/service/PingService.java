@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PingService {
 
-    private final PingRepository pingRepository;
+  private final PingRepository pingRepository;
 
-    public PingService(PingRepository pingRepository) {
-        this.pingRepository = pingRepository;
-    }
+  public PingService(PingRepository pingRepository) {
+    this.pingRepository = pingRepository;
+  }
 
-    public PingMessage health() {
-        return pingRepository.defaultMessage();
-    }
+  public PingMessage health() {
+    return pingRepository.defaultMessage();
+  }
 }

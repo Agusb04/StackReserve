@@ -11,20 +11,19 @@ import org.springframework.http.ResponseEntity;
 
 public class HealthSteps {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+  @Autowired private TestRestTemplate restTemplate;
 
-    private ResponseEntity<PingMessage> response;
+  private ResponseEntity<PingMessage> response;
 
-    @Cuando("consulto el endpoint de health")
-    public void consulto_el_endpoint_de_health() {
-        response = restTemplate.getForEntity("/api/health", PingMessage.class);
-    }
+  @Cuando("consulto el endpoint de health")
+  public void consulto_el_endpoint_de_health() {
+    response = restTemplate.getForEntity("/api/health", PingMessage.class);
+  }
 
-    @Entonces("recibo una respuesta ok")
-    public void recibo_una_respuesta_ok() {
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().status()).isEqualTo("ok");
-    }
+  @Entonces("recibo una respuesta ok")
+  public void recibo_una_respuesta_ok() {
+    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().status()).isEqualTo("ok");
+  }
 }

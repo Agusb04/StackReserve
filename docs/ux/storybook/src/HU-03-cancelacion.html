@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HU-03 - Cancelación de Reserva</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1120;
+        --surface: rgba(15, 23, 42, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.16);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #f97316;
+        --success: #22c55e;
+        --error: #ef4444;
+        --info: #3b82f6;
+        --warning: #f59e0b;
+        --chip: rgba(249, 115, 22, 0.14);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.85)), var(--bg);
+        padding-bottom: 50px;
+      }
+
+      .story { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+      .hero {
+        display: grid; gap: 16px; margin-bottom: 24px; padding: 28px;
+        border-radius: 24px; background: var(--surface); border: 1px solid var(--surface-border);
+      }
+
+      .chip {
+        display: inline-flex; align-items: center; padding: 6px 12px;
+        border-radius: 999px; background: var(--chip); color: #fdba74;
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+      }
+
+      .grid { display: grid; gap: 20px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .card { grid-column: span 12; padding: 24px; border-radius: 20px; background: var(--surface); border: 1px solid var(--surface-border); }
+      .half { grid-column: span 6; }
+      @media (max-width: 900px) { .half { grid-column: span 12; } }
+
+      .app-container {
+        background: #020617; border-radius: 16px; padding: 20px; border: 1px solid #1e293b;
+      }
+
+      .reserva-card {
+        background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 12px;
+        border: 2px solid transparent; transition: 0.3s;
+      }
+      .reserva-card.confirmada { border-color: var(--info); }
+      .reserva-card.cancelada { border-color: var(--error); opacity: 0.5; }
+      .reserva-card.liberada { border-color: var(--success); }
+
+      .badge {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 8px;
+      }
+      .badge-confirmada { background: rgba(59,130,246,0.2); color: #93c5fd; }
+      .badge-cancelada { background: rgba(239,68,68,0.2); color: #fca5a5; }
+      .badge-disponible { background: rgba(34,197,94,0.2); color: #86efac; }
+
+      .cupo-indicator {
+        display: flex; align-items: center; gap: 8px; margin-top: 8px;
+        font-size: 13px; color: var(--muted);
+      }
+      .cupo-bar {
+        flex: 1; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;
+      }
+      .cupo-fill {
+        height: 100%; background: var(--info); border-radius: 3px; transition: width 0.4s;
+      }
+      .cupo-fill.lleno { background: var(--error); }
+      .cupo-fill.libre { background: var(--success); }
+
+      select {
+        width: 100%; padding: 12px; background: #0f172a; color: white;
+        border-radius: 10px; border: 1px solid var(--accent); margin-bottom: 20px;
+      }
+
+      button {
+        background: var(--error); color: white; border: none; padding: 10px 16px;
+        border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px;
+        transition: filter 0.2s;
+      }
+      button:hover { filter: brightness(1.15); }
+      button.secondary { background: #475569; }
+      button.success { background: var(--info); }
+      button:disabled { opacity: 0.4; cursor: not-allowed; filter: none; }
+
+      .history-log {
+        background: #000; padding: 12px; border-radius: 10px; font-family: monospace;
+        font-size: 11px; height: 180px; overflow-y: auto; border: 1px solid #1e293b;
+      }
+
+      .alert {
+        padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px; display: none;
+        border: 1px solid transparent; font-weight: 500;
+      }
+      .alert-success { background: rgba(34, 197, 94, 0.1); color: #86efac; border-color: var(--success); display: block; }
+      .alert-error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: var(--error); display: block; }
+      .alert-warning { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: var(--warning); display: block; }
+
+      .gherkin-box {
+        font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);
+        padding: 16px; border-radius: 12px; color: var(--muted); white-space: pre-wrap;
+      }
+
+      .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+      .info-row span:first-child { color: var(--muted); }
+      .info-row span:last-child { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <article class="story">
+      <header class="hero">
+        <div class="chip">HU-03</div>
+        <h1>Cancelación de Reserva Confirmada</h1>
+        <p class="muted">Simulador interactivo para validar reglas de negocio: Liberación de cupo (RN-04), Titularidad y Reutilización del turno.</p>
+      </header>
+
+      <section class="grid">
+        <section class="card">
+          <h2>Configuración de Escenario Gherkin</h2>
+          <select id="scenario-picker" onchange="initEscenario()">
+            <option value="cancelacion">Escenario: Cancelación exitosa por titular</option>
+            <option value="liberacion">Escenario: Turno liberado puede ser reservado nuevamente</option>
+            <option value="ya-cancelada">Escenario: Intento de cancelar reserva ya cancelada</option>
+            <option value="otro-titular">Escenario: Intento de cancelar reserva de otro estudiante</option>
+            <option value="no-existe">Escenario: Intento de cancelar reserva inexistente</option>
+          </select>
+          <div id="gherkin-text" class="gherkin-box"></div>
+        </section>
+
+        <section class="card half">
+          <h2>Simulador de Aplicación</h2>
+          <div class="app-container">
+            <div id="reserva-panel"></div>
+            <div id="feedback" class="alert" style="display:none"></div>
+          </div>
+        </section>
+
+        <section class="card half">
+          <h2>Historial (Entidad: HistorialEstado)</h2>
+          <div id="log" class="history-log"></div>
+          <div style="margin-top:20px;">
+            <h3>Consistencia de Dominio</h3>
+            <ul style="font-size: 13px; color: var(--muted);">
+              <li><strong>RN-04:</strong> Cancelación libera cupo del turno.</li>
+              <li><strong>Titularidad:</strong> Solo el dueño puede cancelar su reserva.</li>
+              <li><strong>RN-06:</strong> Cada cambio de estado se persiste en el historial.</li>
+              <li><strong>Entidad Reserva:</strong> Estado transiciona de confirmada → cancelada.</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </article>
+
+    <script>
+      const escenarios = {
+        cancelacion: {
+          text: `Escenario: Cancelación exitosa realizada por el titular
+Dado que "Juan Pérez" ha iniciado sesión
+Y que existe RES-0892 en "Sala de Estudio A"
+  para el 27/04/2026 de 10:00 a 11:00 (estado: confirmada)
+Cuando "Juan Pérez" solicita cancelar la reserva RES-0892
+Entonces se marca la reserva RES-0892 con estado "cancelada"
+Y se registra un nuevo estado "cancelada" en el historial
+Y se incrementa en 1 el cupo disponible en "Sala de Estudio A"
+Y se muestra mensaje de cancelación exitosa.`,
+          render: renderCancelacion
+        },
+        liberacion: {
+          text: `Escenario: El turno liberado puede ser reservado nuevamente
+Dado que la reserva RES-0892 de "Juan Pérez" fue cancelada
+Y que el turno de las 10:00 en "Sala de Estudio A"
+  tiene cupo disponible
+Cuando el estudiante "Carlos Gómez" solicita reservar ese turno
+Entonces se genera una nueva reserva con estado "confirmada"
+Y se registra un nuevo estado "confirmada" en el historial.`,
+          render: renderLiberacion
+        },
+        'ya-cancelada': {
+          text: `Escenario: Intento de cancelar una reserva ya cancelada
+Dado que la reserva RES-0892 ya figura con estado "cancelada"
+Cuando "Juan Pérez" intenta cancelar la reserva RES-0892
+Entonces se rechaza la acción
+Y se muestra el mensaje
+  "La reserva RES-0892 ya se encuentra cancelada".`,
+          render: renderYaCancelada
+        },
+        'otro-titular': {
+          text: `Escenario: Intento de cancelar reserva de otro estudiante
+Dado que existe RES-0901 que pertenece a "María García"
+Cuando "Juan Pérez" intenta cancelar la reserva RES-0901
+Entonces se rechaza la acción por falta de titularidad
+Y se muestra el mensaje
+  "No tenés permiso para cancelar esta reserva
+  ya que no te pertenece".`,
+          render: renderOtroTitular
+        },
+        'no-existe': {
+          text: `Escenario: Intento de cancelar una reserva que no existe
+Dado que el código RES-9999 no figura en el sistema
+Cuando el estudiante intenta cancelar la reserva RES-9999
+Entonces se rechaza la acción
+Y se muestra el mensaje "No existe reserva RES-9999".`,
+          render: renderNoExiste
+        }
+      };
+
+      let cupoSala = 3; // 4 total, 3 ocupados (sala casi llena)
+      const maxSala = 4;
+
+      function initEscenario() {
+        cupoSala = 3;
+        document.getElementById('log').innerHTML = '';
+        hideFeedback();
+        const scn = document.getElementById('scenario-picker').value;
+        document.getElementById('gherkin-text').innerText = escenarios[scn].text;
+        escenarios[scn].render();
+      }
+
+      function hideFeedback() {
+        const fb = document.getElementById('feedback');
+        fb.style.display = 'none';
+        fb.className = 'alert';
+      }
+
+      function showFeedback(tipo, msg) {
+        const fb = document.getElementById('feedback');
+        fb.className = `alert alert-${tipo}`;
+        fb.innerText = msg;
+        fb.style.display = 'block';
+      }
+
+      function addLog(codigo, estado, detalle) {
+        const log = document.getElementById('log');
+        const color = estado === 'cancelada' ? '#fca5a5' : estado === 'confirmada' ? '#86efac' : '#fcd34d';
+        log.innerHTML = `<div style="color:${color}">[${new Date().toLocaleTimeString()}] <b>${estado.toUpperCase()}</b> — ${codigo}: ${detalle}</div>` + log.innerHTML;
+      }
+
+      function cupoBar(ocupados, max) {
+        const pct = (ocupados / max) * 100;
+        const cls = ocupados >= max ? 'lleno' : ocupados === 0 ? 'libre' : '';
+        return `<div class="cupo-indicator">
+          <span>${ocupados}/${max}</span>
+          <div class="cupo-bar"><div class="cupo-fill ${cls}" style="width:${pct}%"></div></div>
+          <span>${max - ocupados} libre${max - ocupados !== 1 ? 's' : ''}</span>
+        </div>`;
+      }
+
+      function renderCancelacion() {
+        let cancelado = false;
+        document.getElementById('reserva-panel').innerHTML = `
+          <div id="rc-card" class="reserva-card confirmada">
+            <div class="info-row"><span>Código</span><span>RES-0892</span></div>
+            <div class="info-row"><span>Titular</span><span>Juan Pérez</span></div>
+            <div class="info-row"><span>Sala</span><span>Sala de Estudio A</span></div>
+            <div class="info-row"><span>Turno</span><span>27/04/2026 10:00–11:00</span></div>
+            <div class="info-row"><span>Estado</span><span id="rc-estado"><span class="badge badge-confirmada">confirmada</span></span></div>
+            ${cupoBar(cupoSala, maxSala)}
+          </div>
+          <button id="btn-cancelar" onclick="ejecutarCancelacion()">Cancelar reserva RES-0892 (Juan Pérez)</button>
+        `;
+      }
+
+      function ejecutarCancelacion() {
+        cupoSala--;
+        document.getElementById('rc-card').className = 'reserva-card cancelada';
+        document.getElementById('rc-estado').innerHTML = '<span class="badge badge-cancelada">cancelada</span>';
+        document.getElementById('rc-card').querySelector('.cupo-fill').style.width = ((cupoSala / maxSala) * 100) + '%';
+        document.getElementById('rc-card').querySelector('.cupo-fill').className = 'cupo-fill libre';
+        document.getElementById('rc-card').querySelector('.cupo-indicator span:first-child').innerText = `${cupoSala}/${maxSala}`;
+        document.getElementById('rc-card').querySelector('.cupo-indicator span:last-child').innerText = `${maxSala - cupoSala} libres`;
+        document.getElementById('btn-cancelar').disabled = true;
+        showFeedback('success', 'Hola Juan, tu reserva en la Sala de Estudio A para el 27/04/2026 ha sido cancelada con éxito.');
+        addLog('RES-0892', 'cancelada', 'Cupo liberado. Sala de Estudio A: ' + (maxSala - cupoSala) + ' lugar(es) disponible(s).');
+      }
+
+      function renderLiberacion() {
+        let reservado = false;
+        document.getElementById('reserva-panel').innerHTML = `
+          <div class="reserva-card cancelada">
+            <div class="info-row"><span>Código</span><span>RES-0892</span></div>
+            <div class="info-row"><span>Titular</span><span>Juan Pérez</span></div>
+            <div class="info-row"><span>Estado</span><span><span class="badge badge-cancelada">cancelada</span></span></div>
+          </div>
+          <div id="turno-libre" class="reserva-card liberada">
+            <div class="info-row"><span>Sala</span><span>Sala de Estudio A</span></div>
+            <div class="info-row"><span>Turno</span><span>27/04/2026 10:00–11:00</span></div>
+            <div class="info-row"><span>Cupo</span><span id="cupo-txt"><span class="badge badge-disponible">1 lugar disponible</span></span></div>
+          </div>
+          <button id="btn-nueva" onclick="ejecutarNuevaReserva()">Carlos Gómez solicita este turno</button>
+        `;
+      }
+
+      function ejecutarNuevaReserva() {
+        document.getElementById('cupo-txt').innerHTML = '<span class="badge badge-confirmada">0 lugares — lleno</span>';
+        document.getElementById('turno-libre').className = 'reserva-card confirmada';
+        document.getElementById('btn-nueva').disabled = true;
+        showFeedback('success', '¡Reserva confirmada para Carlos Gómez en Sala de Estudio A, 27/04/2026 10:00!');
+        addLog('RES-nueva', 'confirmada', 'Carlos Gómez ocupa el cupo liberado por RES-0892.');
+      }
+
+      function renderYaCancelada() {
+        document.getElementById('reserva-panel').innerHTML = `
+          <div class="reserva-card cancelada">
+            <div class="info-row"><span>Código</span><span>RES-0892</span></div>
+            <div class="info-row"><span>Titular</span><span>Juan Pérez</span></div>
+            <div class="info-row"><span>Estado</span><span><span class="badge badge-cancelada">cancelada</span></span></div>
+          </div>
+          <button onclick="ejecutarYaCancelada()">Juan Pérez intenta cancelar RES-0892</button>
+        `;
+      }
+
+      function ejecutarYaCancelada() {
+        showFeedback('error', 'La reserva RES-0892 ya se encuentra cancelada.');
+        addLog('RES-0892', 'RECHAZADA', 'La reserva ya tiene estado cancelada. Acción no permitida.');
+      }
+
+      function renderOtroTitular() {
+        document.getElementById('reserva-panel').innerHTML = `
+          <div class="reserva-card confirmada">
+            <div class="info-row"><span>Código</span><span>RES-0901</span></div>
+            <div class="info-row"><span>Titular</span><span>María García</span></div>
+            <div class="info-row"><span>Estado</span><span><span class="badge badge-confirmada">confirmada</span></span></div>
+          </div>
+          <button onclick="ejecutarOtroTitular()">Juan Pérez intenta cancelar RES-0901</button>
+        `;
+      }
+
+      function ejecutarOtroTitular() {
+        showFeedback('error', 'No tenés permiso para cancelar esta reserva ya que no te pertenece.');
+        addLog('RES-0901', 'RECHAZADA', 'Falta de titularidad. Juan Pérez no es titular de RES-0901.');
+      }
+
+      function renderNoExiste() {
+        document.getElementById('reserva-panel').innerHTML = `
+          <div style="text-align:center; padding: 24px; color: var(--muted); font-size:14px;">
+            <div style="font-size:32px; margin-bottom:8px;">🔍</div>
+            RES-9999 no figura en el sistema
+          </div>
+          <button onclick="ejecutarNoExiste()">Estudiante intenta cancelar RES-9999</button>
+        `;
+      }
+
+      function ejecutarNoExiste() {
+        showFeedback('error', 'No existe reserva RES-9999.');
+        addLog('RES-9999', 'RECHAZADA', 'Código de reserva no encontrado en el sistema.');
+      }
+
+      initEscenario();
+    </script>
+  </body>
+</html>
