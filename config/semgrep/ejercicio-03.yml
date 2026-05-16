@@ -1,0 +1,12 @@
+rules:
+  - id: tpi-ej03-import-star
+    languages: [java]
+    severity: ERROR
+    message: Evitar importaciones wildcard.
+    pattern: import $MOD.*;
+
+  - id: tpi-ej03-return-null
+    languages: [java]
+    severity: ERROR
+    message: No devolver null como implementación final en código de dominio/servicio.
+    pattern: return null;
