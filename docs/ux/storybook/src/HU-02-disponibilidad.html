@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HU-02 - Consulta de Disponibilidad</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1120;
+        --surface: rgba(15, 23, 42, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.16);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #f97316;
+        --success: #22c55e;
+        --error: #ef4444;
+        --info: #3b82f6;
+        --warning: #f59e0b;
+        --chip: rgba(249, 115, 22, 0.14);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.85)), var(--bg);
+        padding-bottom: 50px;
+      }
+
+      .story { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+      .hero {
+        display: grid; gap: 16px; margin-bottom: 24px; padding: 28px;
+        border-radius: 24px; background: var(--surface); border: 1px solid var(--surface-border);
+      }
+
+      .chip {
+        display: inline-flex; align-items: center; padding: 6px 12px;
+        border-radius: 999px; background: var(--chip); color: #fdba74;
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+      }
+
+      .grid { display: grid; gap: 20px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .card { grid-column: span 12; padding: 24px; border-radius: 20px; background: var(--surface); border: 1px solid var(--surface-border); }
+      .half { grid-column: span 6; }
+      @media (max-width: 900px) { .half { grid-column: span 12; } }
+
+      .app-container {
+        background: #020617; border-radius: 16px; padding: 20px; border: 1px solid #1e293b;
+      }
+
+      .sala-card {
+        background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 12px;
+        border: 2px solid transparent; transition: border-color 0.3s, opacity 0.3s;
+      }
+      .sala-card.disponible { border-color: var(--success); }
+      .sala-card.parcial { border-color: var(--warning); }
+      .sala-card.llena { border-color: var(--error); opacity: 0.6; }
+
+      .sala-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+      }
+      .sala-header strong { font-size: 14px; }
+
+      .badge {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+      }
+      .badge-disponible { background: rgba(34,197,94,0.2); color: #86efac; }
+      .badge-parcial { background: rgba(245,158,11,0.2); color: #fcd34d; }
+      .badge-llena { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+      .cupo-bar {
+        height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+      }
+      .cupo-fill {
+        height: 100%; border-radius: 3px; transition: width 0.4s, background 0.4s;
+      }
+      .cupo-info {
+        display: flex; justify-content: space-between; font-size: 12px; color: var(--muted);
+      }
+
+      .empty-state {
+        text-align: center; padding: 32px; color: var(--muted); font-size: 14px;
+      }
+      .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+
+      select {
+        width: 100%; padding: 12px; background: #0f172a; color: white;
+        border-radius: 10px; border: 1px solid var(--accent); margin-bottom: 20px;
+      }
+
+      .history-log {
+        background: #000; padding: 12px; border-radius: 10px; font-family: monospace;
+        font-size: 11px; height: 180px; overflow-y: auto; border: 1px solid #1e293b;
+      }
+
+      .alert {
+        padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px;
+        border: 1px solid transparent; font-weight: 500; display: none;
+      }
+      .alert-success { background: rgba(34, 197, 94, 0.1); color: #86efac; border-color: var(--success); display: block; }
+      .alert-warning { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: var(--warning); display: block; }
+      .alert-info { background: rgba(59, 130, 246, 0.1); color: #93c5fd; border-color: var(--info); display: block; }
+
+      .gherkin-box {
+        font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);
+        padding: 16px; border-radius: 12px; color: var(--muted); white-space: pre-wrap;
+      }
+
+      .fecha-display {
+        text-align: center; padding: 10px; background: #0f172a; border-radius: 10px;
+        margin-bottom: 16px; font-family: monospace; font-size: 15px; color: var(--info);
+        border: 1px solid #1e293b;
+      }
+
+      .resumen {
+        display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+      }
+      .resumen-chip {
+        padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+        background: rgba(148,163,184,0.1); color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <article class="story">
+      <header class="hero">
+        <div class="chip">HU-02</div>
+        <h1>Consulta de Disponibilidad de Salas</h1>
+        <p class="muted">Simulador interactivo para validar la consulta de cupo disponible por sala para un día determinado (RF-01, RN-01, RN-02).</p>
+      </header>
+
+      <section class="grid">
+        <section class="card">
+          <h2>Configuración de Escenario Gherkin</h2>
+          <select id="scenario-picker" onchange="initEscenario()">
+            <option value="libres">Escenario: Consulta con salas libres</option>
+            <option value="parcial">Escenario: Consulta con sala parcialmente ocupada</option>
+            <option value="sin-cupo">Escenario: Consulta con sala sin cupo</option>
+            <option value="sin-turnos">Escenario: Consulta para un día sin turnos configurados</option>
+          </select>
+          <div id="gherkin-text" class="gherkin-box"></div>
+        </section>
+
+        <section class="card half">
+          <h2>Simulador de Aplicación</h2>
+          <div class="app-container">
+            <div id="fecha-display" class="fecha-display">📅 27/04/2026</div>
+            <div id="resumen" class="resumen"></div>
+            <div id="salas-panel"></div>
+            <div id="feedback" class="alert" style="display:none"></div>
+          </div>
+        </section>
+
+        <section class="card half">
+          <h2>Historial de consultas</h2>
+          <div id="log" class="history-log"></div>
+          <div style="margin-top:20px;">
+            <h3>Consistencia de Dominio</h3>
+            <ul style="font-size: 13px; color: var(--muted);">
+              <li><strong>RF-01:</strong> Disponibilidad consultada en tiempo real.</li>
+              <li><strong>RN-01:</strong> Cupo = capacidadMáxima − reservas confirmadas.</li>
+              <li><strong>RN-02:</strong> Cada turno está asociado a una sala y un horario.</li>
+              <li><strong>Entidad Sala:</strong> <code>capacidadMaxima</code> define el límite físico.</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </article>
+
+    <script>
+      const escenarios = {
+        libres: {
+          fecha: '27/04/2026',
+          text: `Escenario: Consulta de disponibilidad con salas libres
+Dado que no existen reservas confirmadas para el 27/04/2026
+Cuando se consulta la disponibilidad de salas para el 27/04/2026
+Entonces se retorna una lista con 2 salas disponibles
+Y la "Sala Multimedia A" figura con 6 cupos disponibles
+Y la "Sala Silencio B" figura con 4 cupos disponibles.`,
+          salas: [
+            { nombre: 'Sala Multimedia A', capacidad: 6, ocupadas: 0 },
+            { nombre: 'Sala Silencio B',   capacidad: 4, ocupadas: 0 }
+          ],
+          feedback: { tipo: 'success', msg: 'Se retornan 2 salas disponibles para el 27/04/2026. Todas con cupo completo.' }
+        },
+        parcial: {
+          fecha: '27/04/2026',
+          text: `Escenario: Consulta de disponibilidad con una sala parcialmente ocupada
+Dado que existen 4 reservas confirmadas en la "Sala Multimedia A"
+  para el 27/04/2026
+Cuando se consulta la disponibilidad de salas para el 27/04/2026
+Entonces la "Sala Multimedia A" figura con 2 cupos disponibles
+Y la "Sala Silencio B" figura con 4 cupos disponibles.`,
+          salas: [
+            { nombre: 'Sala Multimedia A', capacidad: 6, ocupadas: 4 },
+            { nombre: 'Sala Silencio B',   capacidad: 4, ocupadas: 0 }
+          ],
+          feedback: { tipo: 'warning', msg: 'Sala Multimedia A: 4 de 6 lugares ocupados. Quedan 2 cupos disponibles.' }
+        },
+        'sin-cupo': {
+          fecha: '27/04/2026',
+          text: `Escenario: Consulta de disponibilidad con una sala sin cupo
+Dado que la "Sala Silencio B" alcanzó su capacidad máxima
+  para el 27/04/2026
+Cuando se consulta la disponibilidad de salas para el 27/04/2026
+Entonces la "Sala Silencio B" figura con 0 cupos disponibles
+Y la "Sala Multimedia A" figura con 6 cupos disponibles.`,
+          salas: [
+            { nombre: 'Sala Multimedia A', capacidad: 6, ocupadas: 0 },
+            { nombre: 'Sala Silencio B',   capacidad: 4, ocupadas: 4 }
+          ],
+          feedback: { tipo: 'warning', msg: 'Sala Silencio B: capacidad máxima alcanzada. 0 cupos disponibles.' }
+        },
+        'sin-turnos': {
+          fecha: '01/01/2030',
+          text: `Escenario: Consulta de disponibilidad para un día sin turnos
+Dado que no existen turnos configurados para el 01/01/2030
+Cuando se consulta la disponibilidad de salas para el 01/01/2030
+Entonces se retorna una lista vacía.`,
+          salas: [],
+          feedback: { tipo: 'info', msg: 'No hay turnos configurados para el 01/01/2030. Se retorna lista vacía.' }
+        }
+      };
+
+      function initEscenario() {
+        document.getElementById('log').innerHTML = '';
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('feedback').className = 'alert';
+
+        const scn = document.getElementById('scenario-picker').value;
+        const cfg = escenarios[scn];
+
+        document.getElementById('gherkin-text').innerText = cfg.text;
+        document.getElementById('fecha-display').innerText = '📅 ' + cfg.fecha;
+
+        const panel = document.getElementById('salas-panel');
+        const resumen = document.getElementById('resumen');
+        panel.innerHTML = '';
+        resumen.innerHTML = '';
+
+        if (cfg.salas.length === 0) {
+          panel.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No hay turnos configurados para esta fecha.<br>La consulta retorna lista vacía.</p></div>`;
+          addLog(cfg.fecha, 'lista-vacía', 'No hay turnos configurados. Retorna [].');
+        } else {
+          const totalCupos = cfg.salas.reduce((s, sala) => s + (sala.capacidad - sala.ocupadas), 0);
+          resumen.innerHTML = `
+            <span class="resumen-chip">${cfg.salas.length} salas</span>
+            <span class="resumen-chip">${totalCupos} cupo${totalCupos !== 1 ? 's' : ''} disponible${totalCupos !== 1 ? 's' : ''}</span>
+          `;
+
+          cfg.salas.forEach(sala => {
+            const cupo = sala.capacidad - sala.ocupadas;
+            const pct = (sala.ocupadas / sala.capacidad) * 100;
+            const cls = cupo === 0 ? 'llena' : sala.ocupadas > 0 ? 'parcial' : 'disponible';
+            const badgeCls = cupo === 0 ? 'badge-llena' : sala.ocupadas > 0 ? 'badge-parcial' : 'badge-disponible';
+            const badgeTxt = cupo === 0 ? 'sin cupo' : sala.ocupadas === 0 ? 'disponible' : 'parcial';
+            const fillColor = cupo === 0 ? 'var(--error)' : sala.ocupadas > 0 ? 'var(--warning)' : 'var(--success)';
+
+            panel.innerHTML += `
+              <div class="sala-card ${cls}">
+                <div class="sala-header">
+                  <strong>${sala.nombre}</strong>
+                  <span class="badge ${badgeCls}">${badgeTxt}</span>
+                </div>
+                <div class="cupo-bar">
+                  <div class="cupo-fill" style="width:${pct}%; background:${fillColor}"></div>
+                </div>
+                <div class="cupo-info">
+                  <span>${sala.ocupadas} ocupado${sala.ocupadas !== 1 ? 's' : ''}</span>
+                  <span><strong style="color:var(--text)">${cupo}</strong> cupo${cupo !== 1 ? 's' : ''} libre${cupo !== 1 ? 's' : ''} de ${sala.capacidad}</span>
+                </div>
+              </div>
+            `;
+            addLog(cfg.fecha, sala.nombre, `${cupo} cupo${cupo !== 1 ? 's' : ''} disponible${cupo !== 1 ? 's' : ''} de ${sala.capacidad}.`);
+          });
+        }
+
+        const fb = document.getElementById('feedback');
+        fb.className = `alert alert-${cfg.feedback.tipo}`;
+        fb.innerText = cfg.feedback.msg;
+        fb.style.display = 'block';
+      }
+
+      function addLog(fecha, sala, detalle) {
+        const log = document.getElementById('log');
+        log.innerHTML = `<div style="color:#93c5fd">[${new Date().toLocaleTimeString()}] <b>CONSULTA</b> — ${sala} (${fecha}): ${detalle}</div>` + log.innerHTML;
+      }
+
+      initEscenario();
+    </script>
+  </body>
+</html>

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class PingRepository {
 
-    public PingMessage defaultMessage() {
-        return new PingMessage("ok", "Template listo");
-    }
+  public PingMessage defaultMessage() {
+    return new PingMessage("ok", "Template listo");
+  }
 }
