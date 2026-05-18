@@ -36,21 +36,14 @@ public class ReservaController {
   }
 
   @PostMapping("/reservas/{codigo}/cancelar")
-  public ResponseEntity<?> cancelar(
-      @PathVariable String codigo,
-      @RequestParam String solicitante) {
+  public ResponseEntity<?> cancelar(@PathVariable String codigo, @RequestParam String solicitante) {
 
     try {
-      String nombreDecodificado =
-          URLDecoder.decode(solicitante, StandardCharsets.UTF_8);
+      String nombreDecodificado = URLDecoder.decode(solicitante, StandardCharsets.UTF_8);
 
-      return ResponseEntity.ok(
-          service.cancelarReserva(codigo, nombreDecodificado));
+      return ResponseEntity.ok(service.cancelarReserva(codigo, nombreDecodificado));
 
-    } catch (
-        IllegalStateException
-            | SecurityException
-            | NoSuchElementException e) {
+    } catch (IllegalStateException | SecurityException | NoSuchElementException e) {
 
       return ResponseEntity.badRequest().body(e.getMessage());
     }

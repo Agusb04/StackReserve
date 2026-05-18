@@ -56,8 +56,7 @@ public class CommonSteps {
     List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
     for (Map<String, String> row : rows) {
       salaRepository.save(
-          new Sala(
-              row.get("Código"), row.get("Nombre"), Integer.parseInt(row.get("Capacidad"))));
+          new Sala(row.get("Código"), row.get("Nombre"), Integer.parseInt(row.get("Capacidad"))));
     }
   }
 

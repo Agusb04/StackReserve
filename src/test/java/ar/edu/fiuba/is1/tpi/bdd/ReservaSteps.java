@@ -14,7 +14,6 @@ import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -33,26 +32,17 @@ public class ReservaSteps {
   @Autowired private ReservaRepository reservaRepository;
   @Autowired private EstudianteRepository estudianteRepository;
 
-  private final DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("dd/MM/yyyy");
+  private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   @Dado(
       "^que en la \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a"
           + " (\\d{2}:\\d{2}) hay cupo disponible$")
-  public void verificarCupoDisponible(
-      String n,
-      String f,
-      String d,
-      String h) {}
+  public void verificarCupoDisponible(String n, String f, String d, String h) {}
 
   @Dado(
       "^que la \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a"
           + " (\\d{2}:\\d{2}) alcanzó su capacidad máxima$")
-  public void forzarCapacidadMaxima(
-      String nombreSala,
-      String fecha,
-      String desde,
-      String hasta) {
+  public void forzarCapacidadMaxima(String nombreSala, String fecha, String desde, String hasta) {
 
     Sala sala =
         salaRepository.findAll().stream()
@@ -62,24 +52,16 @@ public class ReservaSteps {
 
     for (int i = 0; i < sala.getCapacidadMaxima(); i++) {
 
-      Estudiante e =
-          new Estudiante("DUMMY-" + i, "Dummy " + i);
+      Estudiante e = new Estudiante("DUMMY-" + i, "Dummy " + i);
 
       estudianteRepository.save(e);
 
       Turno t =
           new Turno(
-              LocalDate.parse(fecha, formatter),
-              LocalTime.parse(desde),
-              LocalTime.parse(hasta));
+              LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
 
       reservaRepository.save(
-          new Reserva(
-              "SAT-" + i + "-" + sala.getCodigo(),
-              "confirmada",
-              e,
-              sala,
-              t));
+          new Reserva("SAT-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
     }
   }
 
@@ -88,11 +70,7 @@ public class ReservaSteps {
           + " \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4}) de"
           + " (\\d{2}:\\d{2}) a (\\d{2}:\\d{2})$")
   public void crearReservaPrevia(
-      String nombre,
-      String salaNombre,
-      String fecha,
-      String desde,
-      String hasta) {
+      String nombre, String salaNombre, String fecha, String desde, String hasta) {
 
     Estudiante est =
         estudianteRepository.findAll().stream()
@@ -108,17 +86,9 @@ public class ReservaSteps {
 
     Turno t =
         new Turno(
-            LocalDate.parse(fecha, formatter),
-            LocalTime.parse(desde),
-            LocalTime.parse(hasta));
+            LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
 
-    reservaRepository.save(
-        new Reserva(
-            "PREVIA-" + est.getLegajo(),
-            "confirmada",
-            est,
-            sala,
-            t));
+    reservaRepository.save(new Reserva("PREVIA-" + est.getLegajo(), "confirmada", est, sala, t));
   }
 
   @Cuando(
@@ -126,11 +96,7 @@ public class ReservaSteps {
           + " (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a"
           + " (\\d{2}:\\d{2})$")
   public void solicitarReservaAPI(
-      String nombre,
-      String sala,
-      String fecha,
-      String desde,
-      String hasta) {
+      String nombre, String sala, String fecha, String desde, String hasta) {
 
     Map<String, String> body = new HashMap<>();
 
@@ -140,41 +106,24 @@ public class ReservaSteps {
     body.put("horaInicio", desde);
     body.put("horaFin", hasta);
 
-    state.setLastResponse(
-        restTemplate.postForEntity(
-            "/api/reservas",
-            body,
-            String.class));
+    state.setLastResponse(restTemplate.postForEntity("/api/reservas", body, String.class));
   }
 
-  @Cuando(
-      "^\"([^\"]*)\" solicita reservar la \"([^\"]*)\" para el mismo día y horario$")
-  public void solicitarReservaMismoHorario(
-      String nombre,
-      String sala) {
+  @Cuando("^\"([^\"]*)\" solicita reservar la \"([^\"]*)\" para el mismo día y horario$")
+  public void solicitarReservaMismoHorario(String nombre, String sala) {
 
-    solicitarReservaAPI(
-        nombre,
-        sala,
-        "27/04/2026",
-        "10:00",
-        "11:00");
+    solicitarReservaAPI(nombre, sala, "27/04/2026", "10:00", "11:00");
   }
 
   @Entonces("^se registra una nueva reserva con estado \"([^\"]*)\"$")
   @Entonces("^se genera una nueva reserva con estado \"([^\"]*)\"$")
-  public void verificarNuevaReservaPersistida(
-      String estadoEsperado) {
+  public void verificarNuevaReservaPersistida(String estadoEsperado) {
 
-    Assertions.assertThat(reservaRepository.findAll())
-        .isNotEmpty();
+    Assertions.assertThat(reservaRepository.findAll()).isNotEmpty();
 
     boolean existe =
         reservaRepository.findAll().stream()
-            .anyMatch(
-                r ->
-                    r.getEstado()
-                        .equalsIgnoreCase(estadoEsperado));
+            .anyMatch(r -> r.getEstado().equalsIgnoreCase(estadoEsperado));
 
     Assertions.assertThat(existe).isTrue();
   }
@@ -188,20 +137,14 @@ public class ReservaSteps {
           + " (\\d{2}:\\d{2}) a (\\d{2}:\\d{2}) tiene"
           + " (\\d+) reservas confirmadas de las (\\d+) posibles$")
   public void configurarReservasParcialesFCFS(
-      String salaNombre,
-      String fecha,
-      String desde,
-      String hasta,
-      int ocupadas,
-      int max) {
+      String salaNombre, String fecha, String desde, String hasta, int ocupadas, int max) {
 
     salaRepository.findAll().stream()
         .filter(s -> s.getNombre().contains(salaNombre))
         .findFirst()
         .orElseGet(
             () -> {
-              Sala nuevaSala =
-                  new Sala("SALA-FCFS", salaNombre, max);
+              Sala nuevaSala = new Sala("SALA-FCFS", salaNombre, max);
 
               salaRepository.save(nuevaSala);
 
@@ -216,45 +159,30 @@ public class ReservaSteps {
 
     for (int i = 0; i < ocupadas; i++) {
 
-      Estudiante e =
-          new Estudiante("DUMMY-" + i, "Dummy " + i);
+      Estudiante e = new Estudiante("DUMMY-" + i, "Dummy " + i);
 
       estudianteRepository.save(e);
 
       Turno t =
           new Turno(
-              LocalDate.parse(fecha, formatter),
-              LocalTime.parse(desde),
-              LocalTime.parse(hasta));
+              LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
 
       reservaRepository.save(
-          new Reserva(
-              "SAT-" + i + "-" + sala.getCodigo(),
-              "confirmada",
-              e,
-              sala,
-              t));
+          new Reserva("SAT-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
     }
   }
 
   @Dado("^que \"([^\"]*)\" solicita la reserva a las (\\d{2}:\\d{2}:\\d{2}|\\d{2}:\\d{2})$")
-  public void simularLlegadaEstudiante(
-      String nombre,
-      String hora) {
+  public void simularLlegadaEstudiante(String nombre, String hora) {
 
     boolean existe =
-        estudianteRepository.findAll().stream()
-            .anyMatch(e -> e.getNombre().equals(nombre));
+        estudianteRepository.findAll().stream().anyMatch(e -> e.getNombre().equals(nombre));
 
     if (!existe) {
 
-      String legajo =
-          "FCFS-" + hora + "-" + nombre;
+      String legajo = "FCFS-" + hora + "-" + nombre;
 
-      estudianteRepository.save(
-          new Estudiante(
-              legajo,
-              nombre));
+      estudianteRepository.save(new Estudiante(legajo, nombre));
     }
   }
 
@@ -263,10 +191,7 @@ public class ReservaSteps {
 
     Sala sala =
         salaRepository.findAll().stream()
-            .filter(
-                s ->
-                    s.getNombre()
-                        .equalsIgnoreCase("Sala de Multimedia A"))
+            .filter(s -> s.getNombre().equalsIgnoreCase("Sala de Multimedia A"))
             .findFirst()
             .orElseThrow();
 
@@ -278,33 +203,19 @@ public class ReservaSteps {
 
     List<Estudiante> solicitudes =
         estudianteRepository.findAll().stream()
-            .filter(
-                e ->
-                    e.getLegajo() != null
-                        && e.getLegajo().startsWith("FCFS-"))
-            .sorted(
-                Comparator.comparing(
-                    Estudiante::getLegajo))
+            .filter(e -> e.getLegajo() != null && e.getLegajo().startsWith("FCFS-"))
+            .sorted(Comparator.comparing(Estudiante::getLegajo))
             .toList();
 
     long ocupados =
         reservaRepository.findAll().stream()
             .filter(
                 r ->
-                    r.getSala()
-                        .getNombre()
-                        .equalsIgnoreCase(sala.getNombre())
-                        && r.getEstado()
-                            .equalsIgnoreCase("confirmada")
-                        && r.getTurno()
-                            .getFecha()
-                            .equals(fecha)
-                        && r.getTurno()
-                            .getHoraInicio()
-                            .equals(inicio)
-                        && r.getTurno()
-                            .getHoraFin()
-                            .equals(fin))
+                    r.getSala().getNombre().equalsIgnoreCase(sala.getNombre())
+                        && r.getEstado().equalsIgnoreCase("confirmada")
+                        && r.getTurno().getFecha().equals(fecha)
+                        && r.getTurno().getHoraInicio().equals(inicio)
+                        && r.getTurno().getHoraFin().equals(fin))
             .count();
 
     int capacidad = sala.getCapacidadMaxima();
@@ -313,19 +224,10 @@ public class ReservaSteps {
 
       if (ocupados < capacidad) {
 
-        Turno turno =
-            new Turno(
-                fecha,
-                inicio,
-                fin);
+        Turno turno = new Turno(fecha, inicio, fin);
 
         Reserva reserva =
-            new Reserva(
-                "FCFS-" + estudiante.getNombre(),
-                "confirmada",
-                estudiante,
-                sala,
-                turno);
+            new Reserva("FCFS-" + estudiante.getNombre(), "confirmada", estudiante, sala, turno);
 
         reservaRepository.save(reserva);
 
@@ -340,27 +242,20 @@ public class ReservaSteps {
   }
 
   @Entonces("^se confirma la reserva para \"([^\"]*)\"$")
-  public void verificarConfirmacionEspecifica(
-      String nombre) {
+  public void verificarConfirmacionEspecifica(String nombre) {
 
     boolean existe =
         reservaRepository.findAll().stream()
             .anyMatch(
                 r ->
-                    r.getEstudiante()
-                        .getNombre()
-                        .equalsIgnoreCase(nombre)
-                        && r.getEstado()
-                            .equalsIgnoreCase("confirmada"));
+                    r.getEstudiante().getNombre().equalsIgnoreCase(nombre)
+                        && r.getEstado().equalsIgnoreCase("confirmada"));
 
     assertThat(existe).isTrue();
   }
 
-  @Entonces(
-      "^se rechaza la solicitud de \"([^\"]*)\" con el mensaje \"([^\"]*)\"$")
-  public void rechazarConMensajePersonalizado(
-      String estudiante,
-      String mensaje) {
+  @Entonces("^se rechaza la solicitud de \"([^\"]*)\" con el mensaje \"([^\"]*)\"$")
+  public void rechazarConMensajePersonalizado(String estudiante, String mensaje) {
 
     state.setUltimoMensajeSimulado(mensaje);
   }

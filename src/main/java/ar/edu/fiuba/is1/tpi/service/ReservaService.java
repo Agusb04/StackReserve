@@ -26,11 +26,9 @@ public class ReservaService {
   @Autowired private ReservaRepository reservaRepository;
   @Autowired private EstudianteRepository estudianteRepository;
 
-  private static final DateTimeFormatter DATE_FMT =
-      DateTimeFormatter.ofPattern("dd/MM/yyyy");
+  private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-  private static final DateTimeFormatter TIME_FMT =
-      DateTimeFormatter.ofPattern("HH:mm");
+  private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
   public static class DisponibilidadDTO {
     public String nombreSala;
@@ -62,8 +60,7 @@ public class ReservaService {
 
       result.add(
           new DisponibilidadDTO(
-              s.getNombre(),
-              Math.max(0, s.getCapacidadMaxima() - (int) ocupados)));
+              s.getNombre(), Math.max(0, s.getCapacidadMaxima() - (int) ocupados)));
     }
 
     return result;
@@ -77,11 +74,9 @@ public class ReservaService {
 
     LocalDate fecha = LocalDate.parse(fStr, DATE_FMT);
 
-    LocalTime horaInicio =
-        LocalTime.parse(payload.get("horaInicio"), TIME_FMT);
+    LocalTime horaInicio = LocalTime.parse(payload.get("horaInicio"), TIME_FMT);
 
-    LocalTime horaFin =
-        LocalTime.parse(payload.get("horaFin"), TIME_FMT);
+    LocalTime horaFin = LocalTime.parse(payload.get("horaFin"), TIME_FMT);
 
     Sala sala =
         salaRepository.findAll().stream()
@@ -91,13 +86,9 @@ public class ReservaService {
 
     Estudiante est =
         estudianteRepository.findAll().stream()
-            .filter(
-                e ->
-                    e.getLegajo().equals(estLegajo)
-                        || e.getNombre().equals(estLegajo))
+            .filter(e -> e.getLegajo().equals(estLegajo) || e.getNombre().equals(estLegajo))
             .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException("No existe el estudiante"));
+            .orElseThrow(() -> new IllegalArgumentException("No existe el estudiante"));
 
     long ocupados =
         reservaRepository.findAll().stream()
@@ -121,9 +112,7 @@ public class ReservaService {
         reservaRepository.findAll().stream()
             .anyMatch(
                 r ->
-                    r.getEstudiante()
-                        .getNombre()
-                        .equalsIgnoreCase(est.getNombre())
+                    r.getEstudiante().getNombre().equalsIgnoreCase(est.getNombre())
                         && r.getEstado().equalsIgnoreCase("confirmada")
                         && r.getTurno().getFecha().equals(fecha)
                         && r.getTurno().getHoraInicio().equals(horaInicio)
@@ -136,8 +125,7 @@ public class ReservaService {
 
     reservaRepository.save(
         new Reserva(
-            "RES-"
-                + UUID.randomUUID().toString().substring(0, 4).toUpperCase(),
+            "RES-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(),
             "confirmada",
             est,
             sala,
@@ -157,28 +145,20 @@ public class ReservaService {
     Reserva r =
         reservaRepository
             .findById(codigo)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        "No existe reserva " + codigo));
+            .orElseThrow(() -> new NoSuchElementException("No existe reserva " + codigo));
 
     if (r.getEstado().equalsIgnoreCase("cancelada")) {
-      throw new IllegalStateException(
-          "La reserva " + codigo + " ya se encuentra cancelada");
+      throw new IllegalStateException("La reserva " + codigo + " ya se encuentra cancelada");
     }
 
-    if (!r.getEstudiante()
-        .getNombre()
-        .equalsIgnoreCase(solicitante)) {
+    if (!r.getEstudiante().getNombre().equalsIgnoreCase(solicitante)) {
 
       throw new SecurityException(
           "No tenés permiso para cancelar esta reserva ya que no te pertenece");
     }
 
     String fechaTurno =
-        r.getTurno().getFecha() != null
-            ? r.getTurno().getFecha().format(DATE_FMT)
-            : "??/??/????";
+        r.getTurno().getFecha() != null ? r.getTurno().getFecha().format(DATE_FMT) : "??/??/????";
 
     r.setEstado("cancelada");
     reservaRepository.save(r);
@@ -194,18 +174,14 @@ public class ReservaService {
 
   public String checkIn(String codigo) {
 
-    Reserva r =
-        reservaRepository.findById(codigo).orElseThrow();
+    Reserva r = reservaRepository.findById(codigo).orElseThrow();
 
     if (r.getEstado().equalsIgnoreCase("presente")) {
-      throw new IllegalStateException(
-          "La reserva " + codigo + " ya tiene asistencia registrada");
+      throw new IllegalStateException("La reserva " + codigo + " ya tiene asistencia registrada");
     }
 
     String fechaTurno =
-        r.getTurno().getFecha() != null
-            ? r.getTurno().getFecha().format(DATE_FMT)
-            : "??/??/????";
+        r.getTurno().getFecha() != null ? r.getTurno().getFecha().format(DATE_FMT) : "??/??/????";
 
     String horaTurno =
         r.getTurno().getHoraInicio() != null
@@ -226,16 +202,14 @@ public class ReservaService {
         + " "
         + horaTurno;
   }
+
   public Object obtenerHistorial(String codigo) {
 
-  Reserva reserva =
-      reservaRepository
-          .findById(codigo)
-          .orElseThrow(
-              () ->
-                  new NoSuchElementException(
-                      "No existe la reserva " + codigo));
+    Reserva reserva =
+        reservaRepository
+            .findById(codigo)
+            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
 
-  return reserva.getHistorial();
-}
+    return reserva.getHistorial();
+  }
 }

@@ -19,16 +19,13 @@ public class HistorialSteps {
   @Cuando("^se consulta el historial de la reserva \"([^\"]*)\"$")
   public void consultarHistorialPorIdString(String codigoCompleto) {
     state.setLastResponse(
-        restTemplate.getForEntity(
-            "/api/reservas/" + codigoCompleto + "/historial",
-            String.class));
+        restTemplate.getForEntity("/api/reservas/" + codigoCompleto + "/historial", String.class));
   }
 
   @Dado("^que la reserva \"([^\"]*)\" tiene estado \"([^\"]*)\"$")
   public void asegurarEstadoReserva(String codigoCompleto, String estado) {
 
-    Reserva reserva =
-        reservaRepository.findById(codigoCompleto).orElseThrow();
+    Reserva reserva = reservaRepository.findById(codigoCompleto).orElseThrow();
 
     reserva.setEstado(estado);
     reservaRepository.save(reserva);
@@ -39,30 +36,20 @@ public class HistorialSteps {
 
     boolean contiene =
         reservaRepository.findAll().stream()
-            .anyMatch(
-                r ->
-                    r.getEstado().equalsIgnoreCase(estado)
-                        || !r.getHistorial().isEmpty());
+            .anyMatch(r -> r.getEstado().equalsIgnoreCase(estado) || !r.getHistorial().isEmpty());
 
     Assertions.assertThat(contiene).isTrue();
   }
 
-  @Entonces(
-      "^se registra un nuevo estado \"([^\"]*)\" en el historial de la reserva RES-(\\d+)$")
-  public void verificarHistorialContieneEstadoConCodigo(
-      String estado,
-      String codigo) {
+  @Entonces("^se registra un nuevo estado \"([^\"]*)\" en el historial de la reserva RES-(\\d+)$")
+  public void verificarHistorialContieneEstadoConCodigo(String estado, String codigo) {
 
-    Reserva reserva =
-        reservaRepository.findById("RES-" + codigo).orElseThrow();
+    Reserva reserva = reservaRepository.findById("RES-" + codigo).orElseThrow();
 
     boolean contiene =
         reserva.getEstado().equalsIgnoreCase(estado)
             || reserva.getHistorial().stream()
-                .anyMatch(
-                    h ->
-                        h.getEstado()
-                            .equalsIgnoreCase(estado));
+                .anyMatch(h -> h.getEstado().equalsIgnoreCase(estado));
 
     Assertions.assertThat(contiene).isTrue();
   }
@@ -73,9 +60,7 @@ public class HistorialSteps {
     if (state.getLastResponse() != null
         && state.getLastResponse().getStatusCode().is2xxSuccessful()) {
 
-      Assertions.assertThat(
-              state.getLastResponse().getBody())
-          .contains(estado);
+      Assertions.assertThat(state.getLastResponse().getBody()).contains(estado);
 
     } else {
 
