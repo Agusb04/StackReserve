@@ -22,6 +22,7 @@ Implementar la primera versión backend del sistema de gestión de turnos a sala
 ## Cambios principales
 
 - D-01 fue resuelta: Se usaran solo canales oficiales y no oficiales como Whatsapp o Telegram, todo trazado en los requisitos y la minuta.
+- modelo de dominio actualizado con el estudiante con su legajo y nombre
 
 ### Trazabilidad UX y Storybook
 

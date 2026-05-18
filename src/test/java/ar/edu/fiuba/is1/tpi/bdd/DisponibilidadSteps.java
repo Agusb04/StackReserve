@@ -30,7 +30,8 @@ public class DisponibilidadSteps {
   public void limpiarReservasDelDia(String f) {}
 
   @Dado(
-      "^que existen (\\d+) reservas confirmadas en la \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4})$")
+      "^que existen (\\d+) reservas confirmadas en la \"([^\"]*)\" para el"
+          + " (\\d{2}/\\d{2}/\\d{4})$")
   public void crearMultiplesReservasDisponibilidad(int cant, String salaNombre, String fecha) {
     Sala sala =
         salaRepository.findAll().stream()
@@ -44,7 +45,7 @@ public class DisponibilidadSteps {
                 });
 
     for (int i = 0; i < cant; i++) {
-      Estudiante e = new Estudiante("DISP-" + i);
+      Estudiante e = new Estudiante("DISP-" + i, "Estudiante " + i);
       estudianteRepository.save(e);
       Turno t =
           new Turno(

@@ -1,6 +1,8 @@
 package ar.edu.fiuba.is1.tpi.controller;
 
 import ar.edu.fiuba.is1.tpi.service.ReservaService;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +36,44 @@ public class ReservaController {
   }
 
   @PostMapping("/reservas/{codigo}/cancelar")
-  public ResponseEntity<?> cancelar(@PathVariable String codigo, @RequestParam String solicitante) {
+  public ResponseEntity<?> cancelar(
+      @PathVariable String codigo,
+      @RequestParam String solicitante) {
+
     try {
-      return ResponseEntity.ok(service.cancelarReserva(codigo, solicitante));
-    } catch (IllegalStateException | SecurityException | NoSuchElementException e) {
+      String nombreDecodificado =
+          URLDecoder.decode(solicitante, StandardCharsets.UTF_8);
+
+      return ResponseEntity.ok(
+          service.cancelarReserva(codigo, nombreDecodificado));
+
+    } catch (
+        IllegalStateException
+            | SecurityException
+            | NoSuchElementException e) {
+
       return ResponseEntity.badRequest().body(e.getMessage());
     }
   }
 
   @PostMapping("/reservas/{codigo}/check-in")
   public ResponseEntity<?> checkIn(@PathVariable String codigo) {
+
     try {
       return ResponseEntity.ok(service.checkIn(codigo));
-    } catch (IllegalStateException e) {
+
+    } catch (IllegalStateException | NoSuchElementException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  @GetMapping("/reservas/{codigo}/historial")
+  public ResponseEntity<?> historial(@PathVariable String codigo) {
+
+    try {
+      return ResponseEntity.ok(service.obtenerHistorial(codigo));
+
+    } catch (NoSuchElementException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
   }
