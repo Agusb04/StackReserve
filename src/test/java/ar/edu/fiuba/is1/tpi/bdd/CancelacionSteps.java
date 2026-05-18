@@ -34,13 +34,10 @@ public class CancelacionSteps {
           + " \"([^\"]*)\"$")
   public void inyectarReservaEspecifica(
       String cod, String salaN, String f, String d, String h, String nombre) {
-
     Estudiante est = new Estudiante(nombre, nombre);
-
     estudianteRepository.save(est);
 
     Sala sala = new Sala("COD-" + salaN.hashCode(), salaN, 5);
-
     salaRepository.save(sala);
 
     Turno turno =
@@ -54,7 +51,6 @@ public class CancelacionSteps {
 
   @Dado("^que la reserva RES-(\\d+) de \"([^\"]*)\" fue cancelada$")
   public void forzarReservaCancelada(String codigo, String nombre) {
-
     reservaRepository
         .findById("RES-" + codigo)
         .ifPresent(
@@ -66,7 +62,6 @@ public class CancelacionSteps {
 
   @Dado("^que la reserva RES-(\\d+) ya figura con el estado \"([^\"]*)\"$")
   public void forzarEstadoReserva(String codigo, String estado) {
-
     reservaRepository
         .findById("RES-" + codigo)
         .ifPresent(
@@ -77,17 +72,24 @@ public class CancelacionSteps {
   }
 
   @Dado("^que el turno de las (\\d{2}:\\d{2}) en la \"([^\"]*)\" tiene cupo disponible$")
-  public void verificarCupoLiberado(String h, String s) {}
+  public void verificarCupoLiberado(String h, String s) {
+    // Comprobamos que no haya reservas activas bloqueando el espacio en este escenario
+    long ocupadas =
+        reservaRepository.findAll().stream()
+            .filter(
+                r ->
+                    r.getSala().getNombre().contains(s)
+                        && r.getEstado().equalsIgnoreCase("confirmada"))
+            .count();
+    Assertions.assertThat(ocupadas).isZero();
+  }
 
   @Dado("^que existe una reserva con código RES-(\\d+) que pertenece a la estudiante \"([^\"]*)\"$")
   public void cargarReservaAjena(String codigo, String nombre) {
-
     Estudiante est = new Estudiante(nombre, nombre);
-
     estudianteRepository.save(est);
 
     Sala sala = new Sala("COD-SALA-A", "Sala de Estudio A", 5);
-
     salaRepository.save(sala);
 
     Turno turno =
@@ -100,13 +102,15 @@ public class CancelacionSteps {
   }
 
   @Dado("^que el código de reserva RES-(\\d+) no figura en el sistema$")
-  public void asegurarInexistenciaReserva(String c) {}
+  public void asegurarInexistenciaReserva(String c) {
+    // El sistema debe garantizar que la reserva verdaderamente está ausente
+    Assertions.assertThat(reservaRepository.findById("RES-" + c)).isEmpty();
+  }
 
   @Cuando("^\"([^\"]*)\" solicita cancelar la reserva RES-(\\d+)$")
   @Cuando("^\"([^\"]*)\" intenta cancelar la reserva RES-(\\d+)$")
   @Cuando("^el estudiante \"([^\"]*)\" intenta cancelar la reserva RES-(\\d+)$")
   public void solicita_cancelar_la_reserva_res(String nombre, String codigo) {
-
     state.setLastResponse(
         restTemplate.postForEntity(
             "/api/reservas/RES-" + codigo + "/cancelar?solicitante=" + encode(nombre),
@@ -116,7 +120,6 @@ public class CancelacionSteps {
 
   @Cuando("^el estudiante intenta cancelar la reserva RES-(\\d+)$")
   public void intentoCancelacionAnonima(String codigo) {
-
     state.setLastResponse(
         restTemplate.postForEntity(
             "/api/reservas/RES-" + codigo + "/cancelar?solicitante=Anonimo", null, String.class));
@@ -124,11 +127,9 @@ public class CancelacionSteps {
 
   @Cuando("^el estudiante \"([^\"]*)\" solicita reservar ese mismo turno$")
   public void reReservarTurnoLiberado(String nombre) {
-
     estudianteRepository.save(new Estudiante(nombre, nombre));
 
     Map<String, String> body = new HashMap<>();
-
     body.put("nombreEstudiante", nombre);
     body.put("nombreSala", "Sala de Estudio A");
     body.put("fecha", "27/04/2026");
@@ -140,9 +141,7 @@ public class CancelacionSteps {
 
   @Entonces("^se marca la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
   public void se_marca_la_reserva_res_con_estado(String codigo, String estado) {
-
     Reserva r = reservaRepository.findById("RES-" + codigo).orElseThrow();
-
     Assertions.assertThat(r.getEstado()).isEqualToIgnoringCase(estado);
   }
 
@@ -150,8 +149,22 @@ public class CancelacionSteps {
       "^se incrementa en (\\d+) el cupo disponible en la \"([^\"]*)\" para el turno de las"
           + " (\\d{2}:\\d{2})$")
   public void comprobarIncrementoCupo(int c, String s, String h) {
+    Sala sala =
+        salaRepository.findAll().stream()
+            .filter(salaX -> salaX.getNombre().contains(s))
+            .findFirst()
+            .orElseThrow();
 
-    Assertions.assertThat(c).isPositive();
+    long ocupados =
+        reservaRepository.findAll().stream()
+            .filter(
+                r ->
+                    r.getSala().getNombre().equals(sala.getNombre())
+                        && r.getEstado().equalsIgnoreCase("confirmada"))
+            .count();
+
+    Assertions.assertThat(sala.getCapacidadMaxima() - (int) ocupados)
+        .isEqualTo(sala.getCapacidadMaxima());
   }
 
   private String encode(String s) {

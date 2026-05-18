@@ -11,6 +11,12 @@ public class ScenarioState {
   private String usuarioLogueado;
   private String ultimoMensajeSimulado;
 
+  private int totalReservasAntes;
+  private String horarioActual;
+  private String fechaTurnoFinalizado;
+  private String horaInicioTurnoFinalizado;
+  private String horaFinTurnoFinalizado;
+
   public ResponseEntity<String> getLastResponse() {
     return lastResponse;
   }
@@ -35,9 +41,54 @@ public class ScenarioState {
     this.ultimoMensajeSimulado = msg;
   }
 
+  public int getTotalReservasAntes() {
+    return totalReservasAntes;
+  }
+
+  public void setTotalReservasAntes(int totalReservasAntes) {
+    this.totalReservasAntes = totalReservasAntes;
+  }
+
+  public String getHorarioActual() {
+    return horarioActual;
+  }
+
+  public void setHorarioActual(String horarioActual) {
+    this.horarioActual = horarioActual;
+  }
+
+  public String getFechaTurnoFinalizado() {
+    return fechaTurnoFinalizado;
+  }
+
+  public void setFechaTurnoFinalizado(String fechaTurnoFinalizado) {
+    this.fechaTurnoFinalizado = fechaTurnoFinalizado;
+  }
+
+  public String getHoraInicioTurnoFinalizado() {
+    return horaInicioTurnoFinalizado;
+  }
+
+  public void setHoraInicioTurnoFinalizado(String horaInicioTurnoFinalizado) {
+    this.horaInicioTurnoFinalizado = horaInicioTurnoFinalizado;
+  }
+
+  public String getHoraFinTurnoFinalizado() {
+    return horaFinTurnoFinalizado;
+  }
+
+  public void setHoraFinTurnoFinalizado(String horaFinTurnoFinalizado) {
+    this.horaFinTurnoFinalizado = horaFinTurnoFinalizado;
+  }
+
   public void clear() {
     lastResponse = null;
     usuarioLogueado = null;
     ultimoMensajeSimulado = null;
+    totalReservasAntes = 0;
+    horarioActual = null;
+    fechaTurnoFinalizado = null;
+    horaInicioTurnoFinalizado = null;
+    horaFinTurnoFinalizado = null;
   }
 }

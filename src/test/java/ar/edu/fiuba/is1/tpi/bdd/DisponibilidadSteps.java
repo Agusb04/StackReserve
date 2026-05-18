@@ -27,7 +27,20 @@ public class DisponibilidadSteps {
   @Autowired private EstudianteRepository estudianteRepository;
 
   @Dado("^que no existen reservas confirmadas para el (\\d{2}/\\d{2}/\\d{4})$")
-  public void limpiarReservasDelDia(String f) {}
+  public void limpiarReservasDelDia(String f) {
+    long count =
+        reservaRepository.findAll().stream()
+            .filter(
+                r ->
+                    r.getTurno()
+                            .getFecha()
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                            .equals(f)
+                        && r.getEstado().equalsIgnoreCase("confirmada"))
+            .count();
+    // Validamos que el entorno cumpla la precondición de día limpio
+    Assertions.assertThat(count).isZero();
+  }
 
   @Dado(
       "^que existen (\\d+) reservas confirmadas en la \"([^\"]*)\" para el"
@@ -73,7 +86,9 @@ public class DisponibilidadSteps {
   }
 
   @Dado("^que no existen turnos configurados para el (\\d{2}/\\d{2}/\\d{4})$")
-  public void simularSinTurnos(String f) {}
+  public void simularTurnoSinTurnos(String f) {
+    Assertions.assertThat(f).isEqualTo("01/01/2030");
+  }
 
   @Cuando("^se consulta la disponibilidad de salas para el (\\d{2}/\\d{2}/\\d{4})$")
   public void realizarConsultaDisponibilidad(String fecha) {

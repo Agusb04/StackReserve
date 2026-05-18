@@ -34,11 +34,9 @@ public class CheckInSteps {
           + " (\\d{2}:\\d{2}) a (\\d{2}:\\d{2}):$")
   public void cargarMultiplesReservasAsistencia(
       String fecha, String desde, String hasta, DataTable table) {
-
     List<Map<String, String>> rows = table.asMaps(String.class, String.class);
 
     for (Map<String, String> row : rows) {
-
       String legajo = row.get("Legajo");
       String nombreEst = row.get("Estudiante");
 
@@ -46,7 +44,6 @@ public class CheckInSteps {
       estudianteRepository.save(e);
 
       Sala s = new Sala("COD-" + row.get("Sala").hashCode(), row.get("Sala"), 5);
-
       salaRepository.save(s);
 
       Turno t =
@@ -67,12 +64,10 @@ public class CheckInSteps {
   @Dado("^que la reserva RES-(\\d+) tiene estado \"([^\"]*)\"$")
   @Dado("^que la reserva RES-(\\d+) ya tiene estado \"([^\"]*)\"$")
   public void asegurarEstadoEspecificoReserva(String codigo, String estado) {
-
     inyectarOActualizarReserva(codigo, estado);
   }
 
   private void inyectarOActualizarReserva(String codigo, String estado) {
-
     reservaRepository
         .findById("RES-" + codigo)
         .ifPresentOrElse(
@@ -82,27 +77,24 @@ public class CheckInSteps {
             },
             () -> {
               Estudiante e = new Estudiante("EST-1042", "Lucía Gómez");
-
               estudianteRepository.save(e);
-
               Sala s = new Sala("S-GEN", "Sala A", 5);
-
               salaRepository.save(s);
-
               Turno t =
                   new Turno(LocalDate.of(2026, 4, 27), LocalTime.of(10, 0), LocalTime.of(11, 0));
-
               reservaRepository.save(new Reserva("RES-" + codigo, estado, e, s, t));
             });
   }
 
   @Dado("^que el horario actual es (\\d{2}/\\d{2}/\\d{4}) (\\d{2}:\\d{2})$")
-  public void simularHorarioActual(String f, String h) {}
+  public void simularHorarioActual(String f, String h) {
+
+    state.setHorarioActual(f + " " + h);
+  }
 
   @Cuando("^Ana Pérez registra la asistencia de la reserva RES-(\\d+)$")
   @Cuando("^Ana Pérez intenta registrar nuevamente la asistencia de la reserva RES-(\\d+)$")
   public void procesarCheckInAPI(String codigo) {
-
     state.setLastResponse(
         restTemplate.postForEntity(
             "/api/reservas/RES-" + codigo + "/check-in?operador=Ana%20P%C3%A9rez",
@@ -113,13 +105,30 @@ public class CheckInSteps {
   @Dado(
       "^que el turno del (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a (\\d{2}:\\d{2}) ha"
           + " finalizado$")
-  public void finalizarTurno(String f, String d, String h) {}
+  public void finalizarTurno(String f, String d, String h) {
+    state.setFechaTurnoFinalizado(f);
+    state.setHoraInicioTurnoFinalizado(d);
+    state.setHoraFinTurnoFinalizado(h);
+  }
 
   @Cuando("^se procesan los turnos finalizados sin check-in$")
   public void ejecutarProcesamientoAusencias() {
+    DateTimeFormatter dFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     reservaRepository.findAll().stream()
         .filter(r -> r.getEstado().equalsIgnoreCase("confirmada"))
+        .filter(
+            r ->
+                state.getFechaTurnoFinalizado() == null
+                    || (r.getTurno().getFecha().format(dFmt).equals(state.getFechaTurnoFinalizado())
+                        && r.getTurno()
+                            .getHoraInicio()
+                            .toString()
+                            .equals(state.getHoraInicioTurnoFinalizado())
+                        && r.getTurno()
+                            .getHoraFin()
+                            .toString()
+                            .equals(state.getHoraFinTurnoFinalizado())))
         .forEach(
             r -> {
               r.setEstado("ausente");
@@ -129,7 +138,6 @@ public class CheckInSteps {
 
   @Entonces("^se actualiza la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
   public void se_actualiza_la_reserva_res_con_estado(String codigo, String estado) {
-
     Assertions.assertThat(reservaRepository.findById("RES-" + codigo).orElseThrow().getEstado())
         .isEqualToIgnoringCase(estado);
   }
