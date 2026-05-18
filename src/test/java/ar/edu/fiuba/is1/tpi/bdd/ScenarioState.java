@@ -10,9 +10,7 @@ public class ScenarioState {
   private ResponseEntity<String> lastResponse;
   private String usuarioLogueado;
   private String ultimoMensajeSimulado;
-
   private int totalReservasAntes;
-  private String horarioActual;
   private String fechaTurnoFinalizado;
   private String horaInicioTurnoFinalizado;
   private String horaFinTurnoFinalizado;
@@ -49,14 +47,6 @@ public class ScenarioState {
     this.totalReservasAntes = totalReservasAntes;
   }
 
-  public String getHorarioActual() {
-    return horarioActual;
-  }
-
-  public void setHorarioActual(String horarioActual) {
-    this.horarioActual = horarioActual;
-  }
-
   public String getFechaTurnoFinalizado() {
     return fechaTurnoFinalizado;
   }
@@ -86,7 +76,6 @@ public class ScenarioState {
     usuarioLogueado = null;
     ultimoMensajeSimulado = null;
     totalReservasAntes = 0;
-    horarioActual = null;
     fechaTurnoFinalizado = null;
     horaInicioTurnoFinalizado = null;
     horaFinTurnoFinalizado = null;

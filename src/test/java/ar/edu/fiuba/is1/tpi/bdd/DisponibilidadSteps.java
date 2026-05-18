@@ -1,5 +1,7 @@
 package ar.edu.fiuba.is1.tpi.bdd.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ar.edu.fiuba.is1.tpi.bdd.ScenarioState;
 import ar.edu.fiuba.is1.tpi.domain.Estudiante;
 import ar.edu.fiuba.is1.tpi.domain.Reserva;
@@ -14,7 +16,7 @@ import io.cucumber.java.es.Entonces;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import org.assertj.core.api.Assertions;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
@@ -28,34 +30,25 @@ public class DisponibilidadSteps {
 
   @Dado("^que no existen reservas confirmadas para el (\\d{2}/\\d{2}/\\d{4})$")
   public void limpiarReservasDelDia(String f) {
-    long count =
-        reservaRepository.findAll().stream()
-            .filter(
-                r ->
-                    r.getTurno()
-                            .getFecha()
-                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                            .equals(f)
-                        && r.getEstado().equalsIgnoreCase("confirmada"))
-            .count();
-    // Validamos que el entorno cumpla la precondición de día limpio
-    Assertions.assertThat(count).isZero();
+    reservaRepository.deleteAll();
   }
 
   @Dado(
       "^que existen (\\d+) reservas confirmadas en la \"([^\"]*)\" para el"
           + " (\\d{2}/\\d{2}/\\d{4})$")
   public void crearMultiplesReservasDisponibilidad(int cant, String salaNombre, String fecha) {
-    Sala sala =
+    Optional<Sala> salaOpt =
         salaRepository.findAll().stream()
             .filter(s -> s.getNombre().contains(salaNombre))
-            .findFirst()
-            .orElseGet(
-                () -> {
-                  Sala nuevaSala = new Sala("COD-" + salaNombre.hashCode(), salaNombre, 10);
-                  salaRepository.save(nuevaSala);
-                  return nuevaSala;
-                });
+            .findFirst();
+
+    Sala sala;
+    if (salaOpt.isPresent()) {
+      sala = salaOpt.get();
+    } else {
+      sala = new Sala("COD-" + salaNombre.hashCode(), salaNombre, 10);
+      salaRepository.save(sala);
+    }
 
     for (int i = 0; i < cant; i++) {
       Estudiante e = new Estudiante("DISP-" + i, "Estudiante " + i);
@@ -72,22 +65,25 @@ public class DisponibilidadSteps {
 
   @Dado("^que la \"([^\"]*)\" alcanzó su capacidad máxima para el (\\d{2}/\\d{2}/\\d{4})$")
   public void colapsarSalaPorDia(String salaNombre, String fecha) {
-    Sala sala =
+    Optional<Sala> salaOpt =
         salaRepository.findAll().stream()
             .filter(s -> s.getNombre().contains(salaNombre))
-            .findFirst()
-            .orElseGet(
-                () -> {
-                  Sala nuevaSala = new Sala("COD-" + salaNombre.hashCode(), salaNombre, 5);
-                  salaRepository.save(nuevaSala);
-                  return nuevaSala;
-                });
+            .findFirst();
+
+    Sala sala;
+    if (salaOpt.isPresent()) {
+      sala = salaOpt.get();
+    } else {
+      sala = new Sala("COD-" + salaNombre.hashCode(), salaNombre, 3);
+      salaRepository.save(sala);
+    }
     crearMultiplesReservasDisponibilidad(sala.getCapacidadMaxima(), salaNombre, fecha);
   }
 
   @Dado("^que no existen turnos configurados para el (\\d{2}/\\d{2}/\\d{4})$")
   public void simularTurnoSinTurnos(String f) {
-    Assertions.assertThat(f).isEqualTo("01/01/2030");
+    reservaRepository.deleteAll();
+    salaRepository.deleteAll();
   }
 
   @Cuando("^se consulta la disponibilidad de salas para el (\\d{2}/\\d{2}/\\d{4})$")
@@ -98,18 +94,22 @@ public class DisponibilidadSteps {
 
   @Entonces("^se retorna una lista con (\\d+) salas disponibles$")
   public void verificarCantidadSalasRetornadas(int cantidad) {
-    Assertions.assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
-    Assertions.assertThat(state.getLastResponse().getBody()).contains("[");
+    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(state.getLastResponse().getBody()).startsWith("[");
   }
 
   @Entonces("^se retorna una lista vacía$")
   public void verificarRetornoVacio() {
-    Assertions.assertThat(state.getLastResponse().getBody()).contains("[]");
+    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(state.getLastResponse().getBody()).contains("[]");
   }
 
   @Entonces("^la \"([^\"]*)\" figura con (\\d+) cupos disponibles$")
   public void verificarCupoSalaJSON(String nombreSala, int cupos) {
-    Assertions.assertThat(state.getLastResponse().getBody()).contains(nombreSala);
-    Assertions.assertThat(state.getLastResponse().getBody()).contains(String.valueOf(cupos));
+    String body = state.getLastResponse().getBody();
+    assertThat(body).isNotNull();
+    assertThat(body).contains(nombreSala);
+    // Buscamos el número de cupos de forma independiente del formato exacto de la clave del JSON
+    assertThat(body).contains(String.valueOf(cupos));
   }
 }

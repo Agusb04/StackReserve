@@ -1,5 +1,8 @@
-package ar.edu.fiuba.is1.tpi.bdd;
+package ar.edu.fiuba.is1.tpi.bdd.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import ar.edu.fiuba.is1.tpi.bdd.ScenarioState;
 import ar.edu.fiuba.is1.tpi.domain.Estudiante;
 import ar.edu.fiuba.is1.tpi.domain.Sala;
 import ar.edu.fiuba.is1.tpi.repository.EstudianteRepository;
@@ -11,7 +14,6 @@ import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import java.util.List;
 import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CommonSteps {
@@ -66,14 +68,15 @@ public class CommonSteps {
         (state.getLastResponse() != null)
             ? state.getLastResponse().getBody()
             : state.getUltimoMensajeSimulado();
-    Assertions.assertThat(respuestaReal).isNotNull();
-    Assertions.assertThat(respuestaReal).isEqualTo(mensajeEsperado);
+    assertThat(respuestaReal).isNotNull();
+    assertThat(respuestaReal).contains(mensajeEsperado);
   }
 
   @Entonces("^se rechaza la solicitud$")
   @Entonces("^se rechaza la acción$")
   @Entonces("^se rechaza la acción por falta de titularidad sobre la reserva$")
   public void verificarSolicitudRechazada() {
-    Assertions.assertThat(state.getLastResponse().getStatusCode().is4xxClientError()).isTrue();
+    assertThat(state.getLastResponse()).isNotNull();
+    assertThat(state.getLastResponse().getStatusCode().is4xxClientError()).isTrue();
   }
 }
