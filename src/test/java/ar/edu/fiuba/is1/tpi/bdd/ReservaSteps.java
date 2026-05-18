@@ -37,13 +37,29 @@ public class ReservaSteps {
   @Dado(
       "^que en la \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a"
           + " (\\d{2}:\\d{2}) hay cupo disponible$")
-  public void verificarCupoDisponible(String n, String f, String d, String h) {}
+  public void verificarCupoDisponible(String n, String f, String d, String h) {
+    Sala sala =
+        salaRepository.findAll().stream()
+            .filter(s -> s.getNombre().contains(n))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("La sala " + n + " no existe configurada."));
+
+    long ocupados =
+        reservaRepository.findAll().stream()
+            .filter(
+                r ->
+                    r.getSala().getNombre().contains(n)
+                        && r.getTurno().getFecha().equals(LocalDate.parse(f, formatter))
+                        && r.getEstado().equalsIgnoreCase("confirmada"))
+            .count();
+
+    Assertions.assertThat(ocupados).isLessThan(sala.getCapacidadMaxima());
+  }
 
   @Dado(
       "^que la \"([^\"]*)\" para el (\\d{2}/\\d{2}/\\d{4}) de (\\d{2}:\\d{2}) a"
           + " (\\d{2}:\\d{2}) alcanzó su capacidad máxima$")
   public void forzarCapacidadMaxima(String nombreSala, String fecha, String desde, String hasta) {
-
     Sala sala =
         salaRepository.findAll().stream()
             .filter(s -> s.getNombre().contains(nombreSala))
@@ -51,15 +67,11 @@ public class ReservaSteps {
             .orElseThrow();
 
     for (int i = 0; i < sala.getCapacidadMaxima(); i++) {
-
       Estudiante e = new Estudiante("DUMMY-" + i, "Dummy " + i);
-
       estudianteRepository.save(e);
-
       Turno t =
           new Turno(
               LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
-
       reservaRepository.save(
           new Reserva("SAT-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
     }
@@ -71,7 +83,6 @@ public class ReservaSteps {
           + " (\\d{2}:\\d{2}) a (\\d{2}:\\d{2})$")
   public void crearReservaPrevia(
       String nombre, String salaNombre, String fecha, String desde, String hasta) {
-
     Estudiante est =
         estudianteRepository.findAll().stream()
             .filter(e -> e.getNombre().equals(nombre))
@@ -87,7 +98,6 @@ public class ReservaSteps {
     Turno t =
         new Turno(
             LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
-
     reservaRepository.save(new Reserva("PREVIA-" + est.getLegajo(), "confirmada", est, sala, t));
   }
 
@@ -97,9 +107,9 @@ public class ReservaSteps {
           + " (\\d{2}:\\d{2})$")
   public void solicitarReservaAPI(
       String nombre, String sala, String fecha, String desde, String hasta) {
+    state.setTotalReservasAntes(reservaRepository.findAll().size());
 
     Map<String, String> body = new HashMap<>();
-
     body.put("nombreEstudiante", nombre);
     body.put("nombreSala", sala);
     body.put("fecha", fecha);
@@ -111,26 +121,26 @@ public class ReservaSteps {
 
   @Cuando("^\"([^\"]*)\" solicita reservar la \"([^\"]*)\" para el mismo día y horario$")
   public void solicitarReservaMismoHorario(String nombre, String sala) {
-
+    state.setTotalReservasAntes(reservaRepository.findAll().size());
     solicitarReservaAPI(nombre, sala, "27/04/2026", "10:00", "11:00");
   }
 
   @Entonces("^se registra una nueva reserva con estado \"([^\"]*)\"$")
   @Entonces("^se genera una nueva reserva con estado \"([^\"]*)\"$")
   public void verificarNuevaReservaPersistida(String estadoEsperado) {
-
     Assertions.assertThat(reservaRepository.findAll()).isNotEmpty();
-
     boolean existe =
         reservaRepository.findAll().stream()
             .anyMatch(r -> r.getEstado().equalsIgnoreCase(estadoEsperado));
-
     Assertions.assertThat(existe).isTrue();
   }
 
   @Entonces("^la reserva no es registrada$")
   @Entonces("^la segunda reserva no es registrada$")
-  public void verificarNoNuevasReservas() {}
+  public void verificarNoNuevasReservas() {
+    Assertions.assertThat(reservaRepository.findAll().size())
+        .isEqualTo(state.getTotalReservasAntes());
+  }
 
   @Dado(
       "^que la \"([^\"]*)\" el (\\d{2}/\\d{2}/\\d{4}) de"
@@ -138,16 +148,13 @@ public class ReservaSteps {
           + " (\\d+) reservas confirmadas de las (\\d+) posibles$")
   public void configurarReservasParcialesFCFS(
       String salaNombre, String fecha, String desde, String hasta, int ocupadas, int max) {
-
     salaRepository.findAll().stream()
         .filter(s -> s.getNombre().contains(salaNombre))
         .findFirst()
         .orElseGet(
             () -> {
               Sala nuevaSala = new Sala("SALA-FCFS", salaNombre, max);
-
               salaRepository.save(nuevaSala);
-
               return nuevaSala;
             });
 
@@ -158,15 +165,11 @@ public class ReservaSteps {
             .orElseThrow();
 
     for (int i = 0; i < ocupadas; i++) {
-
       Estudiante e = new Estudiante("DUMMY-" + i, "Dummy " + i);
-
       estudianteRepository.save(e);
-
       Turno t =
           new Turno(
               LocalDate.parse(fecha, formatter), LocalTime.parse(desde), LocalTime.parse(hasta));
-
       reservaRepository.save(
           new Reserva("SAT-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
     }
@@ -174,21 +177,16 @@ public class ReservaSteps {
 
   @Dado("^que \"([^\"]*)\" solicita la reserva a las (\\d{2}:\\d{2}:\\d{2}|\\d{2}:\\d{2})$")
   public void simularLlegadaEstudiante(String nombre, String hora) {
-
     boolean existe =
         estudianteRepository.findAll().stream().anyMatch(e -> e.getNombre().equals(nombre));
-
     if (!existe) {
-
       String legajo = "FCFS-" + hora + "-" + nombre;
-
       estudianteRepository.save(new Estudiante(legajo, nombre));
     }
   }
 
   @Cuando("^se procesan ambas solicitudes en orden de llegada$")
   public void procesarSolicitudesFCFS() {
-
     Sala sala =
         salaRepository.findAll().stream()
             .filter(s -> s.getNombre().equalsIgnoreCase("Sala de Multimedia A"))
@@ -196,9 +194,7 @@ public class ReservaSteps {
             .orElseThrow();
 
     LocalDate fecha = LocalDate.of(2026, 4, 27);
-
     LocalTime inicio = LocalTime.of(16, 0);
-
     LocalTime fin = LocalTime.of(17, 0);
 
     List<Estudiante> solicitudes =
@@ -221,20 +217,13 @@ public class ReservaSteps {
     int capacidad = sala.getCapacidadMaxima();
 
     for (Estudiante estudiante : solicitudes) {
-
       if (ocupados < capacidad) {
-
         Turno turno = new Turno(fecha, inicio, fin);
-
         Reserva reserva =
             new Reserva("FCFS-" + estudiante.getNombre(), "confirmada", estudiante, sala, turno);
-
         reservaRepository.save(reserva);
-
         ocupados++;
-
       } else {
-
         state.setUltimoMensajeSimulado(
             "No hay cupo disponible en la Sala de Multimedia A para ese horario");
       }
@@ -243,20 +232,17 @@ public class ReservaSteps {
 
   @Entonces("^se confirma la reserva para \"([^\"]*)\"$")
   public void verificarConfirmacionEspecifica(String nombre) {
-
     boolean existe =
         reservaRepository.findAll().stream()
             .anyMatch(
                 r ->
                     r.getEstudiante().getNombre().equalsIgnoreCase(nombre)
                         && r.getEstado().equalsIgnoreCase("confirmada"));
-
     assertThat(existe).isTrue();
   }
 
   @Entonces("^se rechaza la solicitud de \"([^\"]*)\" con el mensaje \"([^\"]*)\"$")
   public void rechazarConMensajePersonalizado(String estudiante, String mensaje) {
-
     state.setUltimoMensajeSimulado(mensaje);
   }
 }
