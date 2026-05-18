@@ -37,7 +37,8 @@ public class DisponibilidadSteps {
       "^que existen (\\d+) reservas confirmadas en la \"([^\"]*)\" para el"
           + " (\\d{2}/\\d{2}/\\d{4})$")
   public void crearMultiplesReservasDisponibilidad(int cant, String salaNombre, String fecha) {
-    Optional<Sala> salaOpt = salaRepository.findAll().stream()
+    Optional<Sala> salaOpt =
+        salaRepository.findAll().stream()
             .filter(s -> s.getNombre().contains(salaNombre))
             .findFirst();
 
@@ -52,14 +53,20 @@ public class DisponibilidadSteps {
     for (int i = 0; i < cant; i++) {
       Estudiante e = new Estudiante("DISP-" + i, "Estudiante " + i);
       estudianteRepository.save(e);
-      Turno t = new Turno(LocalDate.parse(fecha, DateTimeFormatter.ofPattern("dd/MM/yyyy")), LocalTime.of(10, 0), LocalTime.of(11, 0));
-      reservaRepository.save(new Reserva("R-DISP-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
+      Turno t =
+          new Turno(
+              LocalDate.parse(fecha, DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+              LocalTime.of(10, 0),
+              LocalTime.of(11, 0));
+      reservaRepository.save(
+          new Reserva("R-DISP-" + i + "-" + sala.getCodigo(), "confirmada", e, sala, t));
     }
   }
 
   @Dado("^que la \"([^\"]*)\" alcanzó su capacidad máxima para el (\\d{2}/\\d{2}/\\d{4})$")
   public void colapsarSalaPorDia(String salaNombre, String fecha) {
-    Optional<Sala> salaOpt = salaRepository.findAll().stream()
+    Optional<Sala> salaOpt =
+        salaRepository.findAll().stream()
             .filter(s -> s.getNombre().contains(salaNombre))
             .findFirst();
 
@@ -81,7 +88,8 @@ public class DisponibilidadSteps {
 
   @Cuando("^se consulta la disponibilidad de salas para el (\\d{2}/\\d{2}/\\d{4})$")
   public void realizarConsultaDisponibilidad(String fecha) {
-    state.setLastResponse(restTemplate.getForEntity("/api/salas/disponibilidad?fecha=" + fecha, String.class));
+    state.setLastResponse(
+        restTemplate.getForEntity("/api/salas/disponibilidad?fecha=" + fecha, String.class));
   }
 
   @Entonces("^se retorna una lista con (\\d+) salas disponibles$")

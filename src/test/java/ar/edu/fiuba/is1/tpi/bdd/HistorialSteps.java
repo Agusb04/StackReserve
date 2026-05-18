@@ -3,8 +3,8 @@ package ar.edu.fiuba.is1.tpi.bdd.steps;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ar.edu.fiuba.is1.tpi.bdd.ScenarioState;
-import ar.edu.fiuba.is1.tpi.domain.Reserva;
 import ar.edu.fiuba.is1.tpi.domain.HistorialEstado;
+import ar.edu.fiuba.is1.tpi.domain.Reserva;
 import ar.edu.fiuba.is1.tpi.repository.ReservaRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,13 +42,7 @@ public class HistorialSteps {
     Reserva r = reservaRepository.findById(codigo).orElse(null);
 
     if (r == null) {
-      r = new Reserva(
-          codigo,
-          estado,
-          null,
-          null,
-          null
-      );
+      r = new Reserva(codigo, estado, null, null, null);
     } else {
       r.setEstado(estado);
     }
@@ -74,8 +68,7 @@ public class HistorialSteps {
 
     if (json.isArray()) {
       for (JsonNode node : json) {
-        if (node.has("estado") &&
-            node.get("estado").asText().equalsIgnoreCase(estadoEsperado)) {
+        if (node.has("estado") && node.get("estado").asText().equalsIgnoreCase(estadoEsperado)) {
           contiene = true;
           break;
         }
@@ -92,28 +85,30 @@ public class HistorialSteps {
   // ----------------------------------------------------
   // FIX DEFINITIVO STEP HISTORIAL (SIN AMBIGÜEDAD)
   // ----------------------------------------------------
-  @Entonces("^se registra un nuevo estado \"([^\"]*)\" en el historial de la reserva(?: RES-(\\d+))?$")
+  @Entonces(
+      "^se registra un nuevo estado \"([^\"]*)\" en el historial de la reserva(?: RES-(\\d+))?$")
   public void validarEstadoEnHistorial(String estado, String sufijoCodigo) {
 
-    String codigo = (sufijoCodigo != null)
-        ? "RES-" + sufijoCodigo
-        : reservaRepository.findAll()
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("No hay reservas"))
-            .getCodigo();
+    String codigo =
+        (sufijoCodigo != null)
+            ? "RES-" + sufijoCodigo
+            : reservaRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("No hay reservas"))
+                .getCodigo();
 
-    Reserva reserva = reservaRepository.findById(codigo)
-        .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
+    Reserva reserva =
+        reservaRepository
+            .findById(codigo)
+            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
 
-    boolean contiene = reserva.getHistorial().stream()
-        .map(HistorialEstado::getEstado)
-        .anyMatch(e -> e.equalsIgnoreCase(estado));
+    boolean contiene =
+        reserva.getHistorial().stream()
+            .map(HistorialEstado::getEstado)
+            .anyMatch(e -> e.equalsIgnoreCase(estado));
 
     assertThat(contiene)
-        .withFailMessage(
-            "No se encontró el estado '%s' en historial de %s",
-            estado, codigo)
+        .withFailMessage("No se encontró el estado '%s' en historial de %s", estado, codigo)
         .isTrue();
   }
 
@@ -128,17 +123,11 @@ public class HistorialSteps {
 
     String body = state.getLastResponse().getBody();
 
-    assertThat(body)
-        .withFailMessage("La respuesta del historial es nula")
-        .isNotNull();
+    assertThat(body).withFailMessage("La respuesta del historial es nula").isNotNull();
 
     // El endpoint solo devuelve historial (estado + fechaRegistro)
-    assertThat(body)
-        .withFailMessage("El historial no contiene estados")
-        .contains("estado");
+    assertThat(body).withFailMessage("El historial no contiene estados").contains("estado");
 
-    assertThat(body)
-        .withFailMessage("El historial está vacío")
-        .doesNotContain("[]");
+    assertThat(body).withFailMessage("El historial está vacío").doesNotContain("[]");
   }
 }
