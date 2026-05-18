@@ -58,7 +58,7 @@ lógica de penalizaciones (D-02), navegación de UI.
 | :--- | :--- | :--- |
 | `Sala` | `codigo {id}`, `nombre`, `capacidadMaxima` | RF-08, HU-01 ("Sala de Multimedia A", cap. 6) |
 | `Turno` | `fecha`, `horaInicio`, `horaFin` | RN-02, HU-01 (27/04/2026 10:00 a 11:00) |
-| `Estudiante` | `legajo {id}` | HU-04 (EST-1042, EST-2087), RN-10 |
+| `Estudiante` | `legajo {id}`, `nombre` | HU-04 (EST-1042, EST-2087), RN-10 |
 | `Reserva` | `codigo {id}`, `estado`, `fechaCreacion` | RN-03, HU-01, HU-03 (RES-0892, "confirmada") |
 | `HistorialEstado` | `fechaRegistro`, `estado` | HU-04, RN-06, RN-09 ("presente", "ausente", "cancelada") |
 
@@ -94,7 +94,7 @@ Aunque la autenticación se delega al sistema institucional (RN-08),
 el sistema necesita persistir la identidad del estudiante para vincularla
 a sus reservas. Esto soporta la validación de unicidad por turno (RN-10),
 la restricción de cancelación por titular (HU-03) y la trazabilidad
-de ausencias (RN-06). Se modela con un único atributo identificador: `legajo`.
+de ausencias (RN-06). Se modela con un único atributo identificador: `legajo` y su `nombre`.
 El Personal no se modela como entidad porque el sistema no necesita
 persistir su identidad — solo actúa como actor operativo.
 

@@ -18,6 +18,7 @@ class Turno {
 
 class Estudiante {
   legajo {id}
+  nombre
 }
 
 class Reserva {

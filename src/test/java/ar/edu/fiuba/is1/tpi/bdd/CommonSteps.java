@@ -38,10 +38,10 @@ public class CommonSteps {
   @Dado("^que el estudiante \"([^\"]*)\" ha iniciado sesión correctamente$")
   @Dado("^que el estudiante \"([^\"]*)\" ha iniciado sesión en la plataforma$")
   @Dado("^que el estudiante \"([^\"]*)\" está autenticado$")
-  public void registrarEstudianteLogueado(String legajo) {
-    state.setUsuarioLogueado(legajo);
-    if (!estudianteRepository.existsById(legajo)) {
-      estudianteRepository.save(new Estudiante(legajo));
+  public void registrarEstudianteLogueado(String nombre) {
+    state.setUsuarioLogueado(nombre);
+    if (!estudianteRepository.existsById(nombre)) {
+      estudianteRepository.save(new Estudiante(nombre, nombre));
     }
   }
 
@@ -66,23 +66,8 @@ public class CommonSteps {
         (state.getLastResponse() != null)
             ? state.getLastResponse().getBody()
             : state.getUltimoMensajeSimulado();
-
     Assertions.assertThat(respuestaReal).isNotNull();
-
-    // Validación flexible basada en palabras clave para evitar fallos por formatos de fecha o
-    // nombres
-    String realLower = respuestaReal.toLowerCase();
-    String esperadoLower = mensajeEsperado.toLowerCase();
-
-    if (esperadoLower.contains("cancelada") || esperadoLower.contains("éxito")) {
-      Assertions.assertThat(realLower).contains("cancelada");
-    } else if (esperadoLower.contains("asistencia") || esperadoLower.contains("registrada")) {
-      Assertions.assertThat(realLower).contains("asistencia");
-    } else {
-      // Tolerancia general si cambia el formato
-      Assertions.assertThat(realLower)
-          .contains(esperadoLower.substring(0, Math.min(esperadoLower.length(), 8)));
-    }
+    Assertions.assertThat(respuestaReal).isEqualTo(mensajeEsperado);
   }
 
   @Entonces("^se rechaza la solicitud$")
