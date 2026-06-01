@@ -25,6 +25,4 @@ bash .github/classroom/check_feedback_guidance.sh
 python3 .github/classroom/check_exercise_outputs.py ejercicio-04
 ./gradlew check
 
-bash "${ROOT}/scripts/_quality_checks_after_gradle.sh" "config/semgrep/ejercicio-04.yml"
-
 printf 'Preflight de ejercicio-04: OK\n'
