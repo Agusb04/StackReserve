@@ -30,6 +30,7 @@ test -f docs/ux/refinamiento-ux-template.md
 test -f docs/ux/storybook/index.html
 test -f docs/ux/storybook/src/story-template.html
 test -f docs/arquitectura/adr-template.md
+test -f docs/arquitectura/api-rest-template.md
 test -f docs/arquitectura/c4-contexto-template.md
 test -f docs/arquitectura/c4-contenedores-template.md
 test -f docs/arquitectura/c4-componentes-template.md

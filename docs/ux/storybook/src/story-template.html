@@ -4,182 +4,131 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>HU-XX Story template</title>
-    <style>
-      :root {
-        color-scheme: dark;
-        --bg: #0b1120;
-        --surface: rgba(15, 23, 42, 0.88);
-        --surface-border: rgba(148, 163, 184, 0.16);
-        --text: #e2e8f0;
-        --muted: #94a3b8;
-        --accent: #22c55e;
-        --chip: rgba(34, 197, 94, 0.14);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        color: var(--text);
-        background:
-          linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.85)),
-          radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 22%),
-          var(--bg);
-      }
-
-      .story {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 32px;
-      }
-
-      .hero {
-        display: grid;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding: 28px;
-        border-radius: 24px;
-        background: var(--surface);
-        border: 1px solid var(--surface-border);
-      }
-
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        width: fit-content;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: var(--chip);
-        color: #86efac;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      h1,
-      h2,
-      p,
-      ul {
-        margin-top: 0;
-      }
-
-      h1 {
-        margin-bottom: 0;
-        font-size: clamp(2rem, 5vw, 3.6rem);
-        line-height: 0.96;
-      }
-
-      .grid {
-        display: grid;
-        gap: 20px;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-      }
-
-      .card {
-        grid-column: span 12;
-        padding: 20px;
-        border-radius: 20px;
-        background: var(--surface);
-        border: 1px solid var(--surface-border);
-      }
-
-      .card h2 {
-        margin-bottom: 12px;
-        font-size: 18px;
-      }
-
-      .screen {
-        min-height: 320px;
-        display: grid;
-        place-items: center;
-        border-radius: 18px;
-        border: 1px dashed rgba(148, 163, 184, 0.35);
-        background:
-          linear-gradient(180deg, rgba(15, 23, 42, 0.32), rgba(2, 6, 23, 0.82)),
-          repeating-linear-gradient(
-            90deg,
-            rgba(148, 163, 184, 0.06) 0,
-            rgba(148, 163, 184, 0.06) 1px,
-            transparent 1px,
-            transparent 32px
-          );
-        color: var(--muted);
-      }
-
-      .meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 14px;
-      }
-
-      .meta span {
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(148, 163, 184, 0.08);
-      }
-
-      .half {
-        grid-column: span 12;
-      }
-
-      @media (min-width: 900px) {
-        .half {
-          grid-column: span 6;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./storybook-demo.css" />
   </head>
-  <body>
-    <article class="story">
+  <body class="theme-emerald">
+    <article class="storybook" data-storybook-demo data-config-src="./storybook-demo.config.json">
       <header class="hero">
-        <div class="chip">HU-XX</div>
-        <h1>Título de la historia</h1>
-        <p class="muted">
-          Escenario principal alineado con la historia priorizada, el modelo de dominio y el feature `HU-XX.feature`.
+        <div class="chip">HU-XX / Template resuelto</div>
+        <h1 data-demo-title>Plantilla de story resuelta</h1>
+        <p class="lead" data-demo-subtitle>
+          Esta plantilla sirve para documentar una historia, mostrar su estado visible y verificar una API de ejemplo
+          resuelta en el mismo localhost.
         </p>
         <div class="meta">
-          <span>Storybook</span>
-          <span>Pantalla principal</span>
-          <span>Estado inicial</span>
+          <span data-demo-request-label>GET /api/health</span>
+          <span>Storybook HTML</span>
+          <span>Localhost</span>
+          <span>Config: storybook-demo.config.json</span>
+          <span>JS: storybook-demo.js</span>
         </div>
       </header>
 
-      <section class="grid">
+      <section class="layout">
         <section class="card half">
-          <h2>Pantalla</h2>
+          <h2>Escenario</h2>
           <div class="screen">
-            <div>
-              <strong>Wireframe de la vista principal</strong>
-              <p class="muted">Reemplazá esta superficie con la pantalla, el formulario o el estado relevante.</p>
+            <div class="panel-row">
+              <div class="field">
+                <span>Propósito</span>
+                <div class="control">Describe una pantalla, un estado o una transición concreta.</div>
+              </div>
+              <div class="field">
+                <span>Texto visible</span>
+                <div class="control">Usá palabras del dominio, no nombres técnicos.</div>
+              </div>
+              <ul class="state-list">
+                <li>
+                  <strong>Estado inicial</strong>
+                  El usuario ve la historia antes de interactuar.
+                </li>
+                <li>
+                  <strong>Acción</strong>
+                  Se ejecuta el cambio principal del escenario.
+                </li>
+                <li>
+                  <strong>Resultado</strong>
+                  La pantalla refleja el estado esperado.
+                </li>
+              </ul>
             </div>
           </div>
         </section>
 
-        <section class="card half">
-          <h2>Estados y transiciones</h2>
-          <ul>
-            <li>Estado inicial: ...</li>
-            <li>Acción del usuario: ...</li>
-            <li>Respuesta del sistema: ...</li>
-            <li>Estado final: ...</li>
-          </ul>
-        </section>
+        <aside class="card half">
+          <h2>Conexión front-back</h2>
+          <div class="demo-shell">
+            <div class="status-row">
+              <span class="status-pill" data-demo-status data-state="loading">Verificando</span>
+              <span class="meta">
+                <span data-demo-endpoint>/api/health</span>
+              </span>
+              <span class="meta">
+                <span data-demo-updated>Sin datos todavía</span>
+              </span>
+            </div>
+            <p class="demo-copy" data-demo-message>
+              La tarjeta se completa cuando la API responde en el mismo localhost.
+            </p>
+            <div class="button-group">
+              <button type="button" class="button primary" data-demo-refresh>Recargar salud</button>
+              <span class="notice" data-demo-success-hint>
+                La demo verifica una API de ejemplo no perteneciente al dominio en el mismo localhost.
+              </span>
+            </div>
+            <div class="notice">
+              Para agregar tu propio servicio:
+              1. Creá el endpoint en Spring Boot.
+              2. Copiá esta story y dejá los mismos archivos comunes: `storybook-demo.config.json` y
+              `storybook-demo.js`.
+              3. Cambiá solo `storybook-demo.config.json`: `apiUrl`, `requestLabel`, `title`, `subtitle`,
+              `successHint` y `failureHint`.
+              4. No escribas JavaScript nuevo por historia: `storybook-demo.js` ya lee la config, hace el
+              `fetch` y pinta la respuesta.
+            </div>
+            <div class="notice" data-demo-failure-hint>
+              Si esto no responde, levantá la app con Spring Boot y reintentá la carga.
+            </div>
+            <div class="kv-grid">
+              <div class="kv-item">
+                <dt>Respuesta esperada</dt>
+                <dd data-demo-status-detail>ok</dd>
+              </div>
+              <div class="kv-item">
+                <dt>API usada</dt>
+                <dd data-demo-endpoint>/api/health</dd>
+              </div>
+            </div>
+            <pre class="payload" data-demo-payload>{
+  "status": "ok",
+  "message": "Template listo"
+}</pre>
+          </div>
+        </aside>
 
-        <section class="card">
+        <section class="card wide">
           <h2>Consistencia</h2>
-          <ul>
-            <li>Historia relacionada: `HU-XX`</li>
-            <li>Feature relacionada: `src/test/resources/features/HU-XX.feature`</li>
-            <li>Modelo de dominio: ...</li>
+          <ul class="trace-list">
+            <li>
+              <strong>Historia</strong>
+              <code>HU-XX</code>
+              <span>La story debe coincidir con la feature `src/test/resources/features/HU-XX.feature`.</span>
+            </li>
+            <li>
+              <strong>Modelo</strong>
+              <code>Conceptos del dominio</code>
+              <span>La pantalla usa vocabulario del modelo, no nombres de clases o servicios.</span>
+            </li>
+            <li>
+              <strong>Conexión local</strong>
+              <code>GET /api/health</code>
+              <span>La demo resuelve una integración simple en el mismo localhost.</span>
+            </li>
           </ul>
         </section>
       </section>
     </article>
+
+    <script src="./storybook-demo.js" defer></script>
   </body>
 </html>

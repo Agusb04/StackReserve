@@ -67,6 +67,4 @@ main_fn()
 PY
 ./gradlew check
 
-bash "${ROOT}/scripts/_quality_checks_after_gradle.sh" "config/semgrep/ejercicio-03.yml"
-
 printf 'Preflight de ejercicio-03: OK\n'

@@ -33,10 +33,10 @@ write_failure_summary() {
         ;;
       ejercicio-03|ejercicio-04)
         echo "1. \`python3 scripts/bootstrap_quality_tools.py\` (JAR de \`google-java-format\` + venv con Semgrep bajo \`tools/\`)"
-        echo "2. \`./gradlew check\` (tests, Checkstyle, PMD, SpotBugs)"
-        echo "3. \`bash scripts/preflight-${branch}.sh\` (incluye salidas del ejercicio, formato y Semgrep para esa entrega)"
+        echo "2. \`./gradlew check\` (tests, Checkstyle, PMD, SpotBugs, google-java-format, Semgrep)"
+        echo "3. \`bash scripts/preflight-${branch}.sh\` (incluye salidas del ejercicio y la validación específica de esa entrega)"
         echo ""
-        echo "- Si falló **Solo Gradle**: abrí \`build/reports/\` (checkstyle, pmd, spotbugs) o el stacktrace de tests en la consola local."
+        echo "- Si falló **Gradle**: abrí \`build/reports/\` (checkstyle, pmd, spotbugs), el stacktrace de tests y la salida de google-java-format/Semgrep en la consola local."
         echo "- Si falló **google-java-format**: formateá con el mismo JAR o con el plugin/IDE alineado a la versión del repo."
         echo "- Si falló **Semgrep**: el mensaje indica regla y archivo; ajustá el código según \`config/semgrep/ejercicio-0X.yml\`."
         ;;

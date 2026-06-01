@@ -16,3 +16,4 @@ Este repositorio ya fue inicializado y configurado.
 - Copiar o derivar cada template a su archivo vivo correspondiente, sin editar el template original.
 - Mantener separación clara entre `controller`, `service`, `domain`, `repository` y `config`.
 - Los archivos `*.feature` deben ser ejecutables con Cucumber JVM, no sólo documentales.
+- Si tocás wrappers de preflight o checkers cargados con `runpy`, `bash -n` no alcanza: probá el preflight completo con un fixture mínimo y validá el entrypoint real.
