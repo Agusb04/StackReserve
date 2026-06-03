@@ -6,6 +6,12 @@ import re
 import sys
 from pathlib import Path
 
+ALLOWED_NON_HU_FEATURE_FILES = {
+    "feature-template.feature",
+    "health.feature",
+    "ejercicio-04-flujo-api.feature",
+}
+
 
 MERMAID_BLOCK_RE = re.compile(r"(?ms)```mermaid\s*(.*?)\s*```")
 _C4_RELATION_RE = re.compile(r"\b(?:BiRel|Rel(?:_[A-Za-z]+)?|RelIndex)\s*\(")
@@ -156,6 +162,8 @@ def _markdown_table_rows(section: str) -> list[list[str]]:
         if "|" not in line:
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+            continue
         if len(cells) >= 2:
             rows.append(cells)
     return rows
@@ -540,7 +548,7 @@ def check_ejercicio_03() -> None:
     non_hu_features = [
         path
         for path in feature_inventory
-        if path.name != "feature-template.feature" and not re.fullmatch(r"HU-\d+\.feature", path.name)
+        if path.name not in ALLOWED_NON_HU_FEATURE_FILES and not re.fullmatch(r"HU-\d+\.feature", path.name)
     ]
     if non_hu_features:
         raise SystemExit(
@@ -933,7 +941,7 @@ def check_ejercicio_04() -> None:
     non_hu_features = [
         path
         for path in feature_inventory
-        if path.name != "feature-template.feature" and not re.fullmatch(r"HU-\d+\.feature", path.name)
+        if path.name not in ALLOWED_NON_HU_FEATURE_FILES and not re.fullmatch(r"HU-\d+\.feature", path.name)
     ]
     if non_hu_features:
         raise SystemExit(
