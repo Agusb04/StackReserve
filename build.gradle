@@ -2,6 +2,9 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'checkstyle'
+    id 'pmd'
+    id 'com.github.spotbugs' version '6.5.4'
 }
 
 group = 'ar.edu.fiuba.is1'
@@ -25,8 +28,101 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-spring:7.20.1'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.20.1'
     testImplementation 'org.junit.platform:junit-platform-suite'
+
+    spotbugs 'com.github.spotbugs:spotbugs:4.9.8'
+    spotbugs 'org.apache.commons:commons-lang3:3.20.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+def qualityGjfJar = System.getenv('QUALITY_GJF_JAR') ?: "${rootProject.projectDir}/tools/google-java-format.jar"
+def qualitySemgrep = System.getenv('QUALITY_SEMGREP') ?: "${rootProject.projectDir}/tools/quality-venv/bin/semgrep"
+
+tasks.register('googleJavaFormatCheck') {
+    group = 'verification'
+    description = 'Checks Java sources with google-java-format.'
+    doLast {
+        File gjfJar = file(qualityGjfJar)
+        if (!gjfJar.isFile()) {
+            throw new GradleException('No se encontró el JAR de google-java-format. Ejecutá python3 scripts/bootstrap_quality_tools.py.')
+        }
+
+        def javaFiles = []
+        javaFiles.addAll(fileTree('src/main/java') { include '**/*.java' }.files)
+        javaFiles.addAll(fileTree('src/test/java') { include '**/*.java' }.files)
+        if (!javaFiles.isEmpty()) {
+            exec {
+                commandLine 'java', '-jar', gjfJar.absolutePath, '--dry-run', '--set-exit-if-changed', *javaFiles.collect { it.absolutePath }
+            }
+        }
+    }
+}
+
+tasks.register('semgrepCheck') {
+    group = 'verification'
+    description = 'Scans Java sources with Semgrep.'
+    doLast {
+        File semgrepExecutable = file(qualitySemgrep)
+        if (!semgrepExecutable.exists()) {
+            throw new GradleException('No se encontró Semgrep. Ejecutá python3 scripts/bootstrap_quality_tools.py.')
+        }
+
+        File semgrepConfig = rootProject.file('config/semgrep/ejercicio-04.yml')
+        if (!semgrepConfig.isFile()) {
+            throw new GradleException("No existe la config de Semgrep: ${semgrepConfig}")
+        }
+
+        exec {
+            commandLine semgrepExecutable.absolutePath, 'scan', '--config', semgrepConfig.absolutePath, '--error', '--metrics=off', 'src/main/java', 'src/test/java'
+        }
+    }
+}
+
+tasks.register('qualityCheck') {
+    group = 'verification'
+    description = 'Runs the extra quality checks used in the final exercises.'
+    dependsOn 'checkstyleMain', 'checkstyleTest', 'pmdMain', 'pmdTest', 'spotbugsMain', 'spotbugsTest', 'googleJavaFormatCheck', 'semgrepCheck'
+}
+
+tasks.named('check') {
+    dependsOn 'qualityCheck'
+}
+
+checkstyle {
+    toolVersion = '10.24.0'
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+pmd {
+    toolVersion = '7.13.0'
+    ruleSetFiles = rootProject.files('config/pmd/ruleset.xml')
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+spotbugs {
+    toolVersion = '4.9.8'
+    ignoreFailures = false
+    excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        xml.required = true
+        html.required = false
+    }
 }
