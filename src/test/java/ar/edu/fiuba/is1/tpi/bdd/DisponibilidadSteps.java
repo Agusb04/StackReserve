@@ -113,55 +113,68 @@ public class DisponibilidadSteps {
   }
 
   @Entonces("^se retorna una lista con (\\d+) salas disponibles$")
-  public void verificarCantidadSalasRetornadas(int cantidad) throws Exception {
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarCantidadSalasRetornadas(int cantidad) {
+    try {
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(
-            "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
+      ResponseEntity<String> response =
+          restTemplate.getForEntity(
+              "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
 
-    List<Map<String, Object>> salas =
-        objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-    assertThat(salas).isNotNull();
-    assertThat(salas.size()).isEqualTo(cantidad);
+      List<Map<String, Object>> salas =
+          objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+      assertThat(salas).isNotNull();
+      assertThat(salas.size()).isEqualTo(cantidad);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Entonces("^se retorna una lista vacía$")
-  public void verificarRetornoVacio() throws Exception {
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarRetornoVacio() {
+    try {
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(
-            "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
+      ResponseEntity<String> response =
+          restTemplate.getForEntity(
+              "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
 
-    List<Map<String, Object>> salas =
-        objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-    assertThat(salas).isNotNull().isEmpty();
+      List<Map<String, Object>> salas =
+          objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+      assertThat(salas).isNotNull().isEmpty();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Entonces("^la \"([^\"]*)\" figura con (\\d+) cupos disponibles$")
-  public void verificarCupoSalaJSON(String nombreSala, int cupos) throws Exception {
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarCupoSalaJSON(String nombreSala, int cupos) {
+    try {
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    ResponseEntity<String> response =
-        restTemplate.getForEntity(
-            "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
+      ResponseEntity<String> response =
+          restTemplate.getForEntity(
+              "/api/salas/disponibilidad?fecha=" + state.getUltimaFechaConsultada(), String.class);
 
-    List<Map<String, Object>> salas =
-        objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-    assertThat(salas).isNotNull();
+      List<Map<String, Object>> salas =
+          objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+      assertThat(salas).isNotNull();
 
-    boolean encontradoYCorrecto =
-        salas.stream()
-            .anyMatch(
-                d -> {
-                  String nombreS = String.valueOf(d.getOrDefault("nombreSala", ""));
-                  int cuposReal = (int) d.getOrDefault("cuposDisponibles", 0);
-                  return nombreS.equalsIgnoreCase(nombreSala.trim()) && cuposReal == cupos;
-                });
+      boolean encontradoYCorrecto =
+          salas.stream()
+              .anyMatch(
+                  d -> {
+                    String nombreS = String.valueOf(d.getOrDefault("nombreSala", ""));
+                    int cuposReal = (int) d.getOrDefault("cuposDisponibles", 0);
+                    return nombreS.equalsIgnoreCase(nombreSala.trim()) && cuposReal == cupos;
+                  });
 
-    assertThat(encontradoYCorrecto)
-        .withFailMessage("No se encontró la sala '%s' con exactamente %d cupos.", nombreSala, cupos)
-        .isTrue();
+      assertThat(encontradoYCorrecto)
+          .withFailMessage(
+              "No se encontró la sala '%s' con exactamente %d cupos.", nombreSala, cupos)
+          .isTrue();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

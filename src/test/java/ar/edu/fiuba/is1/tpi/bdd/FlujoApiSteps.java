@@ -139,44 +139,47 @@ public class FlujoApiSteps {
    * <p>El endpoint devuelve: [{"nombreSala":"Sala 101","cuposDisponibles":6}, ...]
    */
   @Entonces("la disponibilidad para la fecha {string} y la sala {string} es de {int} cupos")
-  public void verificarDisponibilidad(String fecha, String nombreSala, int cuposEsperados)
-      throws Exception {
+  public void verificarDisponibilidad(String fecha, String nombreSala, int cuposEsperados) {
+    try {
+      ResponseEntity<String> response =
+          restTemplate.getForEntity("/api/salas/disponibilidad?fecha=" + fecha, String.class);
 
-    ResponseEntity<String> response =
-        restTemplate.getForEntity("/api/salas/disponibilidad?fecha=" + fecha, String.class);
+      assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+      String body = response.getBody();
+      assertThat(body).as("El body de disponibilidad no debe ser nulo").isNotNull();
 
-    String body = response.getBody();
-    assertThat(body).as("El body de disponibilidad no debe ser nulo").isNotNull();
+      List<Map<String, Object>> disponibilidad =
+          objectMapper.readValue(body, new TypeReference<>() {});
 
-    List<Map<String, Object>> disponibilidad =
-        objectMapper.readValue(body, new TypeReference<>() {});
+      // Buscar la sala por nombre (case-insensitive)
+      Map<String, Object> entradaSala =
+          disponibilidad.stream()
+              .filter(
+                  d ->
+                      nombreSala.equalsIgnoreCase(String.valueOf(d.getOrDefault("nombreSala", ""))))
+              .findFirst()
+              .orElse(null);
 
-    // Buscar la sala por nombre (case-insensitive)
-    Map<String, Object> entradaSala =
-        disponibilidad.stream()
-            .filter(
-                d -> nombreSala.equalsIgnoreCase(String.valueOf(d.getOrDefault("nombreSala", ""))))
-            .findFirst()
-            .orElse(null);
+      assertThat(entradaSala)
+          .as("No se encontró la sala \"" + nombreSala + "\" en la respuesta de disponibilidad")
+          .isNotNull();
 
-    assertThat(entradaSala)
-        .as("No se encontró la sala \"" + nombreSala + "\" en la respuesta de disponibilidad")
-        .isNotNull();
-
-    int cuposReales = (int) entradaSala.get("cuposDisponibles");
-    assertThat(cuposReales)
-        .as(
-            "Cupos disponibles para \""
-                + nombreSala
-                + "\" en "
-                + fecha
-                + ": esperados="
-                + cuposEsperados
-                + ", reales="
-                + cuposReales)
-        .isEqualTo(cuposEsperados);
+      int cuposReales = (int) entradaSala.get("cuposDisponibles");
+      assertThat(cuposReales)
+          .as(
+              "Cupos disponibles para \""
+                  + nombreSala
+                  + "\" en "
+                  + fecha
+                  + ": esperados="
+                  + cuposEsperados
+                  + ", reales="
+                  + cuposReales)
+          .isEqualTo(cuposEsperados);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -187,7 +190,7 @@ public class FlujoApiSteps {
    * <p>El endpoint devuelve: [{"estado":"confirmada",...}, {"estado":"cancelada",...}]
    */
   @Entonces("el historial de {string} contiene el estado {string}")
-  public void verificarHistorial(String estudiante, String estadoEsperado) throws Exception {
+  public void verificarHistorial(String estudiante, String estadoEsperado) {
     String codigo = codigoReservaPorEstudiante.get(estudiante);
     assertThat(codigo).as("No se encontró código de reserva para: " + estudiante).isNotNull();
 
@@ -199,22 +202,28 @@ public class FlujoApiSteps {
     String body = response.getBody();
     assertThat(body).as("El historial no debe ser nulo para " + estudiante).isNotNull();
 
-    List<Map<String, Object>> historial = objectMapper.readValue(body, new TypeReference<>() {});
+    try {
+      List<Map<String, Object>> historial = objectMapper.readValue(body, new TypeReference<>() {});
 
-    assertThat(historial).as("El historial de " + estudiante + " no debe estar vacío").isNotEmpty();
+      assertThat(historial)
+          .as("El historial de " + estudiante + " no debe estar vacío")
+          .isNotEmpty();
 
-    Map<String, Object> ultimoEstado = historial.get(historial.size() - 1);
-    String estadoReal = String.valueOf(ultimoEstado.get("estado"));
+      Map<String, Object> ultimoEstado = historial.get(historial.size() - 1);
+      String estadoReal = String.valueOf(ultimoEstado.get("estado"));
 
-    assertThat(estadoReal)
-        .as(
-            "Estado final de "
-                + estudiante
-                + ": esperado=\""
-                + estadoEsperado
-                + "\", real=\""
-                + estadoReal
-                + "\"")
-        .isEqualToIgnoringCase(estadoEsperado);
+      assertThat(estadoReal)
+          .as(
+              "Estado final de "
+                  + estudiante
+                  + ": esperado=\""
+                  + estadoEsperado
+                  + "\", real=\""
+                  + estadoReal
+                  + "\"")
+          .isEqualToIgnoringCase(estadoEsperado);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

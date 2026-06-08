@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ public class ReservaRepository {
 
   public synchronized void save(Reserva reserva) {
     if (reserva != null && reserva.getCodigo() != null) {
-      db.put(reserva.getCodigo().trim().toUpperCase(), reserva);
+      db.put(reserva.getCodigo().trim().toUpperCase(Locale.ROOT), reserva);
     }
   }
 
@@ -24,19 +25,19 @@ public class ReservaRepository {
     if (id == null) {
       return Optional.empty();
     }
-    return Optional.ofNullable(db.get(id.trim().toUpperCase()));
+    return Optional.ofNullable(db.get(id.trim().toUpperCase(Locale.ROOT)));
   }
 
   public synchronized long countReservasActivas(String nombreSala, LocalDate fecha) {
     if (nombreSala == null || fecha == null) {
       return 0;
     }
-    String salaNorm = nombreSala.trim().toLowerCase();
+    String salaNorm = nombreSala.trim().toLowerCase(Locale.ROOT);
     return db.values().stream()
         .filter(
             r ->
                 r.getSala() != null
-                    && r.getSala().getNombre().trim().toLowerCase().equals(salaNorm))
+                    && r.getSala().getNombre().trim().toLowerCase(Locale.ROOT).equals(salaNorm))
         .filter(r -> "confirmada".equalsIgnoreCase(r.getEstadoActual()))
         .filter(r -> r.getTurno() != null && r.getTurno().getFecha().equals(fecha))
         .count();
@@ -47,12 +48,12 @@ public class ReservaRepository {
     if (codigoSala == null || fecha == null || inicio == null || fin == null) {
       return 0;
     }
-    String codigoNorm = codigoSala.trim().toUpperCase();
+    String codigoNorm = codigoSala.trim().toUpperCase(Locale.ROOT);
     return db.values().stream()
         .filter(
             r ->
                 r.getSala() != null
-                    && r.getSala().getCodigo().trim().toUpperCase().equals(codigoNorm))
+                    && r.getSala().getCodigo().trim().toUpperCase(Locale.ROOT).equals(codigoNorm))
         .filter(r -> "confirmada".equalsIgnoreCase(r.getEstadoActual()))
         .filter(
             r ->
@@ -68,12 +69,16 @@ public class ReservaRepository {
     if (legajo == null || fecha == null || inicio == null || fin == null) {
       return false;
     }
-    String legajoNorm = legajo.trim().toUpperCase();
+    String legajoNorm = legajo.trim().toUpperCase(Locale.ROOT);
     return db.values().stream()
         .filter(
             r ->
                 r.getEstudiante() != null
-                    && r.getEstudiante().legajo().trim().toUpperCase().equals(legajoNorm))
+                    && r.getEstudiante()
+                        .legajo()
+                        .trim()
+                        .toUpperCase(Locale.ROOT)
+                        .equals(legajoNorm))
         .filter(r -> "confirmada".equalsIgnoreCase(r.getEstadoActual()))
         .anyMatch(
             r ->

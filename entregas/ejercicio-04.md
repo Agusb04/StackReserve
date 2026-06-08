@@ -103,6 +103,17 @@ A nivel arquitectónico y de persistencia, se diseñó formalmente el **Modelo E
 * **Desacoplamiento mayoritario en Pruebas de Aceptación (BDD de Caja Negra):** Siguiendo las directrices metodológicas de la cátedra, la mayoría de los steps de Cucumber interactúan como clientes externos a través de la superficie pública REST/JSON mediante `TestRestTemplate` y validan respuestas con DTOs tipados. Hay una excepción deliberada: algunos pasos de precondición (`Given`) utilizan helpers que manipulan repositorios en memoria para preparar estados complejos de prueba (esto está documentado en `docs/arquitectura/adr-001.md`). Esta decisión es pragmática y está indicada para ser migrada en iteraciones futuras hacia llamadas a la API o endpoints de test.
 * Nota de Diseño sobre Disponibilidad Diaria (HU-02): Se optó conscientemente por un enfoque de inventario integrado por fecha en el endpoint /api/salas/disponibilidad. Las reservas se debitan del total de la capacidad diaria de la sala. Esto mitiga la complejidad transaccional en memoria y garantiza consistencia directa con las aserciones lógicas del BDD, delegando el solapamiento estricto por bloques horarios individuales a las validaciones mandatorias de la capa de servicio (countByTurnoYSala) al momento de efectuar el POST.
 
+### Cambios de bajo nivel en código (nota técnica)
+
+- Reserva.getHistorial() ahora devuelve una copia inmutable para evitar exponer la lista interna mutable.
+- Se añadió `Locale.ROOT` donde correspondía para normalización de strings (toUpperCase/toLowerCase).
+- Manejo de parseo: los parseos de fecha/hora en `ReservaService.crearReserva` capturan `DateTimeParseException` y la normalizan a `IllegalArgumentException` para que el controlador devuelva `400 Bad Request` en entradas inválidas.
+- Generación segura de legajo para `Personal` en `checkIn`: reemplazamos la lógica insegura con `LEG-XXX` derivado del hash (evita substring inseguro).
+- Repositorios en memoria: `SalaRepository` y `EstudianteRepository` cambiaron su almacenamiento interno a `ConcurrentHashMap` para reducir posibilidades de condition-race en accesos concurrentes (nota: `ReservaRepository` mantiene sincronización en métodos críticos).
+- Se añadieron tests/steps y actualizaciones de BDD para mantener trazabilidad sobre los cambios anteriores.
+
+Nota importante sobre calidad automática: aún resta aplicar `google-java-format` a los archivos modificados — `./gradlew check` puede fallar en la tarea `googleJavaFormatCheck` hasta que se aplique el formateo. También se corrigió un warning de PMD relacionado con imports duplicados.
+
 
 ## Flujo de prueba de API 
 

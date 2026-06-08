@@ -91,29 +91,32 @@ public class HistorialSteps {
   // ── VERIFICACIONES ────────────────────────────────────────────────────────────
 
   @Entonces("^el historial muestra un estado \"([^\"]*)\"$")
-  public void verificarHistorial(String estadoEsperado) throws Exception {
-    assertThat(state.getLastResponse()).isNotNull();
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarHistorial(String estadoEsperado) {
+    try {
+      assertThat(state.getLastResponse()).isNotNull();
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    String codigoReal = state.getUltimaReservaConsultada();
-    assertThat(codigoReal).isNotNull();
+      String codigoReal = state.getUltimaReservaConsultada();
+      assertThat(codigoReal).isNotNull();
 
-    ResponseEntity<String> rawResponse =
-        restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
-    assertThat(rawResponse.getBody()).isNotNull().doesNotStartWith("No existe");
+      ResponseEntity<String> rawResponse =
+          restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
+      assertThat(rawResponse.getBody()).isNotNull().doesNotStartWith("No existe");
 
-    List<Map<String, Object>> historial =
-        objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
+      List<Map<String, Object>> historial =
+          objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
 
-    assertThat(historial).isNotNull();
-    assertThat(containsEstado(historial, estadoEsperado)).isTrue();
+      assertThat(historial).isNotNull();
+      assertThat(containsEstado(historial, estadoEsperado)).isTrue();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Entonces(
       "^se registra un nuevo estado \"([^\"]*)\" en el historial de la reserva(?:"
           + " ([A-Za-z0-9-]+))?$")
-  public void validarEstadoEnHistorial(String estado, String codigoFeatureCompleto)
-      throws Exception {
+  public void validarEstadoEnHistorial(String estado, String codigoFeatureCompleto) {
     String codigoReal = null;
 
     if (codigoFeatureCompleto != null) {
@@ -131,48 +134,56 @@ public class HistorialSteps {
     }
     assertThat(codigoReal).isNotNull();
 
-    ResponseEntity<String> rawResponse =
-        restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
-    assertThat(rawResponse.getBody())
-        .withFailMessage(
-            "El endpoint de historial devolvió un error de negocio: %s", rawResponse.getBody())
-        .isNotNull()
-        .doesNotStartWith("No ");
+    try {
+      ResponseEntity<String> rawResponse =
+          restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
+      assertThat(rawResponse.getBody())
+          .withFailMessage(
+              "El endpoint de historial devolvió un error de negocio: %s", rawResponse.getBody())
+          .isNotNull()
+          .doesNotStartWith("No ");
 
-    List<Map<String, Object>> historial =
-        objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
+      List<Map<String, Object>> historial =
+          objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
 
-    assertThat(historial).isNotNull();
-    assertThat(containsEstado(historial, estado))
-        .withFailMessage(
-            "No se registró el estado '%s' en la reserva real '%s'", estado, codigoReal)
-        .isTrue();
+      assertThat(historial).isNotNull();
+      assertThat(containsEstado(historial, estado))
+          .withFailMessage(
+              "No se registró el estado '%s' en la reserva real '%s'", estado, codigoReal)
+          .isTrue();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Entonces("^la fecha y hora del turno es \"([^\"]*)\"$")
-  public void verificarFechaHora(String esperado) throws Exception {
-    assertThat(state.getLastResponse()).isNotNull();
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarFechaHora(String esperado) {
+    try {
+      assertThat(state.getLastResponse()).isNotNull();
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    String codigoReal = state.getUltimaReservaConsultada();
-    assertThat(codigoReal).isNotNull();
+      String codigoReal = state.getUltimaReservaConsultada();
+      assertThat(codigoReal).isNotNull();
 
-    ResponseEntity<String> rawResponse =
-        restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
+      ResponseEntity<String> rawResponse =
+          restTemplate.getForEntity("/api/reservas/" + codigoReal + "/historial", String.class);
 
-    List<Map<String, Object>> historial =
-        objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
+      List<Map<String, Object>> historial =
+          objectMapper.readValue(rawResponse.getBody(), new TypeReference<>() {});
 
-    assertThat(historial).isNotNull().isNotEmpty();
+      assertThat(historial).isNotNull().isNotEmpty();
 
-    boolean tieneFecha =
-        historial.stream()
-            .anyMatch(
-                d ->
-                    d.get("fechaRegistro") != null
-                        && !String.valueOf(d.get("fechaRegistro")).isBlank());
+      boolean tieneFecha =
+          historial.stream()
+              .anyMatch(
+                  d ->
+                      d.get("fechaRegistro") != null
+                          && !String.valueOf(d.get("fechaRegistro")).isBlank());
 
-    assertThat(tieneFecha).isTrue();
+      assertThat(tieneFecha).isTrue();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // ── HELPER DE TRADUCCIÓN DE ESTADOS AL DOMINIO RICO ──────────────────────────

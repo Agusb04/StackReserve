@@ -1,5 +1,6 @@
 package ar.edu.fiuba.is1.tpi.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ public final class Reserva {
   private final Sala sala;
   private final Turno turno;
   private final List<HistorialEstado> historial = new ArrayList<>();
+  private final LocalDateTime fechaCreacion;
 
   public Reserva(String codigo, Estudiante estudiante, Sala sala, Turno turno) {
     if (codigo == null || estudiante == null || sala == null || turno == null) {
@@ -19,7 +21,12 @@ public final class Reserva {
     this.estudiante = estudiante;
     this.sala = sala;
     this.turno = turno;
+    this.fechaCreacion = LocalDateTime.now();
     this.historial.add(new HistorialEstado("confirmada", "SISTEMA"));
+  }
+
+  public LocalDateTime getFechaCreacion() {
+    return fechaCreacion;
   }
 
   public String getEstadoActual() {
@@ -80,6 +87,7 @@ public final class Reserva {
   }
 
   public List<HistorialEstado> getHistorial() {
-    return Collections.unmodifiableList(historial);
+    // Devolver una copia inmutable para no exponer la lista interna mutable a callers externos
+    return Collections.unmodifiableList(new ArrayList<>(historial));
   }
 }
