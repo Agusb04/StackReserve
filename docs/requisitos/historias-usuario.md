@@ -18,10 +18,10 @@
 
 | ID | Motivo de prioridad | Feature esperado | Tag canónico |
 |----|--------------------|-----------------|--------------|
-| HU-01 | Núcleo del sistema. Concentra reglas críticas como evitar superposición y gestionar disponibilidad | `src/test/resources/features/HU-01.feature` | — |
+| HU-01 | Núcleo del sistema. Concentra reglas críticas como evitar superposición y gestionar disponibilidad | `src/test/resources/features/HU-01.feature` | `@creacion-reserva` |
 | HU-02 | Prioridad de los interesados para E3. Habilita consultar qué salas tienen cupo disponible para un día determinado antes de reservar | `src/test/resources/features/HU-02.feature` | `@disponibilidad-salas` |
 | HU-03 | Prioridad de los interesados para E3. Completa el ciclo del turno desde el lado del estudiante y permite liberar recursos | `src/test/resources/features/HU-03.feature` | `@cancelacion-reserva` |
-| HU-04 | Cierra el ciclo operativo y habilita trazabilidad y análisis de ausencias | `src/test/resources/features/HU-04.feature` | — |
+| HU-04 | Cierra el ciclo operativo y habilita trazabilidad y análisis de ausencias | `src/test/resources/features/HU-04.feature` | `@registrar-asistencia`|
 
 ---
 

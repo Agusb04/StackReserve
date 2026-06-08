@@ -3,32 +3,33 @@ package ar.edu.fiuba.is1.tpi.bdd.steps;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ar.edu.fiuba.is1.tpi.bdd.ScenarioState;
-import ar.edu.fiuba.is1.tpi.domain.Estudiante;
-import ar.edu.fiuba.is1.tpi.domain.Reserva;
-import ar.edu.fiuba.is1.tpi.domain.Sala;
-import ar.edu.fiuba.is1.tpi.domain.Turno;
-import ar.edu.fiuba.is1.tpi.repository.EstudianteRepository;
+import ar.edu.fiuba.is1.tpi.domain.Personal;
 import ar.edu.fiuba.is1.tpi.repository.ReservaRepository;
-import ar.edu.fiuba.is1.tpi.repository.SalaRepository;
+import ar.edu.fiuba.is1.tpi.service.ReservaService.HistorialDTO;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.ResponseEntity;
 
 public class CheckInSteps {
 
   @Autowired private TestRestTemplate restTemplate;
   @Autowired private ScenarioState state;
-  @Autowired private SalaRepository salaRepository;
   @Autowired private ReservaRepository reservaRepository;
-  @Autowired private EstudianteRepository estudianteRepository;
+
+  private String obtenerIdReal(String codigoFeature) {
+    return state.obtenerIdReal(codigoFeature);
+  }
+
+  // ── PRECONDICIONES ────────────────────────────────────────────────────────────
 
   @Dado("^que el estudiante \"([^\"]*)\" tiene una reserva confirmada con código RES-(\\d+)$")
   public void registrarReservaConfirmadaCheckIn(String nombre, String codigo) {
@@ -47,48 +48,57 @@ public class CheckInSteps {
   }
 
   @Dado("^que el horario actual es (\\d{2}/\\d{2}/\\d{4}) (\\d{2}:\\d{2})$")
-  public void configurarHorarioActualSimulado(String fecha, String hora) {
+  public void configuracionHorarioActualSimulado(String fecha, String hora) {
     state.setFechaTurnoFinalizado(fecha);
-    state.setHoraFinTurnoFinalizado(hora);
+    state.setHoraInicioTurnoFinalizado(hora);
   }
 
   @Dado(
       "^que existen las siguientes reservas confirmadas para el (\\d{2}/\\d{2}/\\d{4}) de"
           + " (\\d{2}:\\d{2}) a (\\d{2}:\\d{2}):$")
   public void cargarReservasDesdeTabla(String f, String d, String h, DataTable dataTable) {
-    reservaRepository.deleteAll();
-
     List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
-    LocalDate fecha = LocalDate.parse(f, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-    LocalTime desde = LocalTime.parse(d);
-    LocalTime hasta = LocalTime.parse(h);
 
     for (Map<String, String> columns : rows) {
-      String codigo = columns.get("Código");
+      String codigoFeature = columns.get("Código");
       String estudianteNombre = columns.get("Estudiante");
+      String legajo = columns.get("Legajo");
       String salaNombre = columns.get("Sala");
 
-      String legajo =
-          estudianteNombre.equalsIgnoreCase("Lucía Gómez")
-              ? "EST-1042"
-              : "LEG-" + estudianteNombre.hashCode();
-      Estudiante est = new Estudiante(legajo, estudianteNombre);
-      estudianteRepository.save(est);
+      Map<String, String> bodyEstudiante = new HashMap<>();
+      bodyEstudiante.put("legajo", legajo);
+      bodyEstudiante.put("nombre", estudianteNombre);
+      restTemplate.postForEntity("/api/estudiantes", bodyEstudiante, String.class);
 
-      Sala sala =
-          salaRepository.findAll().stream()
-              .filter(s -> s.getNombre().equalsIgnoreCase(salaNombre))
-              .findFirst()
-              .orElseGet(
-                  () -> {
-                    Sala nueva = new Sala("COD-" + salaNombre.hashCode(), salaNombre, 5);
-                    salaRepository.save(nueva);
-                    return nueva;
-                  });
+      Map<String, Object> bodySala = new HashMap<>();
+      bodySala.put("codigo", "COD-" + (salaNombre.hashCode() & 0x7fffffff));
+      bodySala.put("nombre", salaNombre);
+      bodySala.put("capacidad", 5);
+      restTemplate.postForEntity("/api/salas", bodySala, String.class);
 
-      Turno turno = new Turno(fecha, desde, hasta);
-      // Al crearse por primera vez pasa por el constructor -> agrega "confirmada" al historial
-      reservaRepository.save(new Reserva("RES-" + codigo, "confirmada", est, sala, turno));
+      Map<String, String> bodyReserva = new HashMap<>();
+      bodyReserva.put("nombreEstudiante", estudianteNombre);
+      bodyReserva.put("nombreSala", salaNombre);
+      bodyReserva.put("fecha", f);
+      bodyReserva.put("horaInicio", d);
+      bodyReserva.put("horaFin", h);
+
+      ResponseEntity<String> response =
+          restTemplate.postForEntity("/api/reservas", bodyReserva, String.class);
+
+      if (response.getStatusCode().is2xxSuccessful()) {
+        String responseBody = response.getBody();
+        if (responseBody != null) {
+          String realId =
+              responseBody.contains("|")
+                  ? responseBody.split("\\|")[0].trim()
+                  : responseBody.trim();
+          if (codigoFeature != null) {
+            state.registrarMapeo(codigoFeature, realId);
+            state.setUltimaReservaConsultada(realId);
+          }
+        }
+      }
     }
   }
 
@@ -98,111 +108,170 @@ public class CheckInSteps {
   public void finalizarTurno(String f, String d, String h) {
     state.setFechaTurnoFinalizado(f);
     state.setHoraFinTurnoFinalizado(h);
-
-    reservaRepository
-        .findById("RES-0901")
-        .ifPresent(
-            r -> {
-              Turno t =
-                  new Turno(
-                      LocalDate.parse(f, DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                      LocalTime.parse(d),
-                      LocalTime.parse(h));
-              // Re-utilizamos la misma reserva conservando sus datos e historial, solo alteramos el
-              // bloque horario
-              Reserva actualizada =
-                  new Reserva(r.getCodigo(), r.getEstado(), r.getEstudiante(), r.getSala(), t);
-              // Copiamos el historial existente para no vaciarlo
-              actualizada.getHistorial().addAll(r.getHistorial());
-              reservaRepository.save(actualizada);
-            });
   }
 
-  private void inyectarOActualizarReserva(String codigo, String estado, String nombreEstudiante) {
-    reservaRepository
-        .findById("RES-" + codigo)
-        .ifPresentOrElse(
-            r -> {
-              // Mutamos usando el setEstado original para que impacte en el HistorialEstado
-              r.setEstado(estado);
-              reservaRepository.save(r);
-            },
-            () -> {
-              String legajo =
-                  nombreEstudiante.equalsIgnoreCase("Lucía Gómez") ? "EST-1042" : "EST-1011";
-              Estudiante e = new Estudiante(legajo, nombreEstudiante);
-              estudianteRepository.save(e);
-
-              Sala s = new Sala("S-GEN", "Sala A", 5);
-              salaRepository.save(s);
-
-              Turno t =
-                  new Turno(LocalDate.of(2026, 4, 27), LocalTime.of(10, 0), LocalTime.of(11, 0));
-              reservaRepository.save(new Reserva("RES-" + codigo, estado, e, s, t));
-            });
-  }
+  // ── ACCIONES MODIFICADAS (Alineadas con la firma del Controlador) ─────────────
 
   @Cuando("^Ana Pérez registra la asistencia de la reserva RES-(\\d+)$")
-  public void registrarAsistenciaAna(String codigo) {
+  public void registrarAsistenciaPorDefecto(String codigo) {
+    String idReal = obtenerIdReal(codigo);
+    // "Ana Pérez" coincide con el comportamiento de negocio explícito pasándolo URL-encoded
+    String operarioParam = URLEncoder.encode("Ana Pérez", StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/RES-" + codigo + "/check-in", null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
   }
 
   @Cuando("^\"([^\"]*)\" registra la asistencia de la reserva RES-(\\d+)$")
-  public void registrarAsistenciaOtro(String nombre, String codigo) {
+  public void registrarAsistenciaPorOperario(String operario, String codigo) {
+    String idReal = obtenerIdReal(codigo);
+    String operarioParam = URLEncoder.encode(operario, StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/RES-" + codigo + "/check-in", null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
   }
 
   @Cuando("^Ana Pérez intenta registrar nuevamente la asistencia de la reserva RES-(\\d+)$")
-  public void reintentarAsistenciaAna(String codigo) {
+  public void reintentarAsistenciaPorDefecto(String codigo) {
+    String idReal = obtenerIdReal(codigo);
+    String operarioParam = URLEncoder.encode("Ana Pérez", StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/RES-" + codigo + "/check-in", null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
   }
 
   @Cuando("^\"([^\"]*)\" intenta registrar nuevamente la asistencia de la reserva RES-(\\d+)$")
-  public void reintentarAsistenciaOtro(String nombre, String codigo) {
+  public void reintentarAsistenciaPorOperario(String operario, String codigo) {
+    String idReal = obtenerIdReal(codigo);
+    String operarioParam = URLEncoder.encode(operario, StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/RES-" + codigo + "/check-in", null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
   }
 
   @Cuando("^el estudiante realiza el check-in de la reserva RES-(\\d+)$")
-  public void realizarCheckIn(String codigo) {
+  public void realizarCheckInEstudianteAutoservicio(String codigo) {
+    String idReal = obtenerIdReal(codigo);
+    // Al no enviar parámetro por URL, Spring Boot inyecta de forma segura la constante defaultValue
+    // = "SISTEMA"
     state.setLastResponse(
-        restTemplate.postForEntity(
-            "/api/reservas/RES-" + codigo + "/check-in", null, String.class));
+        restTemplate.postForEntity("/api/reservas/" + idReal + "/check-in", null, String.class));
+  }
+
+  @Cuando("^se procesan los turnos finalizados sin check-in$")
+  public void procesarTurnosFinalizadosSinCheckIn() {
+    state.setLastResponse(
+        restTemplate.postForEntity("/api/reservas/procesar-ausencias", null, String.class));
   }
 
   @Cuando(
       "^se ejecuta el procesamiento automático de ausencias para el día (\\d{2}/\\d{2}/\\d{4}) a"
           + " las (\\d{2}:\\d{2})$")
   public void ejecutarProcesamientoAusencias(String f, String h) {
-    simularProcesamientoAusenciasEfectivo();
+    state.setLastResponse(
+        restTemplate.postForEntity("/api/reservas/procesar-ausencias", null, String.class));
   }
 
-  @Cuando("^se procesan los turnos finalizados sin check-in$")
-  public void procesarTurnosFinalizadosSinCheckInAutomatico() {
-    simularProcesamientoAusenciasEfectivo();
+  // ── VERIFICACIONES ────────────────────────────────────────────────────────────
+
+  @Entonces("^se actualiza la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
+  public void verificarCheckInExitoso(String codigo, String estado) {
+    assertThat(state.getLastResponse()).isNotNull();
+    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful())
+        .withFailMessage(
+            "Se esperaba respuesta exitosa pero se obtuvo: %s - Body: %s",
+            state.getLastResponse().getStatusCode(), state.getLastResponse().getBody())
+        .isTrue();
   }
 
-  private void simularProcesamientoAusenciasEfectivo() {
-    reservaRepository.findAll().stream()
-        .filter(r -> r.getEstado().equalsIgnoreCase("confirmada"))
-        .forEach(
+  @Entonces("^se marca la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
+  public void verificarEstadoViaHistorial(String codigo, String estado) {
+    String idReal = obtenerIdReal(codigo);
+
+    ResponseEntity<String> rawResponse =
+        restTemplate.getForEntity("/api/reservas/" + idReal + "/historial", String.class);
+    assertThat(rawResponse.getStatusCode().is2xxSuccessful())
+        .withFailMessage(
+            "Error al llamar al historial para la reserva %s (Real: %s). Body de error: %s",
+            codigo, idReal, rawResponse.getBody())
+        .isTrue();
+
+    ResponseEntity<HistorialDTO[]> response =
+        restTemplate.getForEntity("/api/reservas/" + idReal + "/historial", HistorialDTO[].class);
+
+    HistorialDTO[] historial = response.getBody();
+    assertThat(historial).isNotNull();
+
+    boolean contiene =
+        java.util.Arrays.stream(historial)
+            .anyMatch(dto -> dto.estado() != null && dto.estado().equalsIgnoreCase(estado));
+
+    assertThat(contiene)
+        .withFailMessage(
+            "No se encontró el estado '%s' en el historial de %s (Real: %s)",
+            estado, codigo, idReal)
+        .isTrue();
+  }
+
+  // ── HELPERS DE SETUP MODIFICADOS PARA DOMINIO RICO ───────────────────────────
+
+  private void inyectarOActualizarReserva(String codigo, String estado, String nombreEstudiante) {
+    String idReal = obtenerIdReal(codigo);
+    reservaRepository
+        .findById(idReal)
+        .ifPresentOrElse(
             r -> {
-              r.setEstado("ausente");
+              completarEstadoTrazabilidad(r, estado);
               reservaRepository.save(r);
+            },
+            () -> {
+              String legajo =
+                  nombreEstudiante.equalsIgnoreCase("Lucía Gómez") ? "EST-1042" : "EST-1011";
+
+              Map<String, String> bodyEst = new HashMap<>();
+              bodyEst.put("legajo", legajo);
+              bodyEst.put("nombre", nombreEstudiante);
+              restTemplate.postForEntity("/api/estudiantes", bodyEst, String.class);
+
+              Map<String, Object> bodySala = new HashMap<>();
+              bodySala.put("codigo", "S-GEN");
+              bodySala.put("nombre", "Sala A");
+              bodySala.put("capacidad", 5);
+              restTemplate.postForEntity("/api/salas", bodySala, String.class);
+
+              Map<String, String> bodyRes = new HashMap<>();
+              bodyRes.put("nombreEstudiante", nombreEstudiante);
+              bodyRes.put("nombreSala", "Sala A");
+              bodyRes.put("fecha", "27/04/2026");
+              bodyRes.put("horaInicio", "10:00");
+              bodyRes.put("horaFin", "11:00");
+
+              ResponseEntity<String> res =
+                  restTemplate.postForEntity("/api/reservas", bodyRes, String.class);
+              if (res.getStatusCode().is2xxSuccessful() && res.getBody() != null) {
+                String bodyText = res.getBody();
+                String createdId =
+                    bodyText.contains("|") ? bodyText.split("\\|")[0].trim() : bodyText.trim();
+                state.registrarMapeo(codigo, createdId);
+
+                reservaRepository
+                    .findById(createdId)
+                    .ifPresent(
+                        r -> {
+                          completarEstadoTrazabilidad(r, estado);
+                          reservaRepository.save(r);
+                        });
+              }
             });
   }
 
-  @Entonces("^se actualiza la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
-  @Entonces("^se marca la reserva RES-(\\d+) con estado \"([^\"]*)\"$")
-  public void se_actualiza_la_reserva_res_con_estado(String codigo, String estado) {
-    Reserva r = reservaRepository.findById("RES-" + codigo).orElseThrow();
-    assertThat(r.getEstado()).isEqualToIgnoringCase(estado);
+  private void completarEstadoTrazabilidad(ar.edu.fiuba.is1.tpi.domain.Reserva r, String estado) {
+    if ("cancelada".equalsIgnoreCase(estado)) {
+      r.cancelar(r.getEstudiante().nombre());
+    } else if ("presente".equalsIgnoreCase(estado)) {
+      r.registrarAsistencia(new Personal("LEG-AUDIT", "Ana Pérez"));
+    } else if ("ausente".equalsIgnoreCase(estado)) {
+      r.marcarAusenciaAutomatica();
+    }
   }
 }

@@ -6,7 +6,7 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 
 ---
 
-# Historias y escenarios cubiertos
+## Historias y escenarios cubiertos
 
 | Historia | Escenario principal | Storybook (Archivo fuente) |
 | :--- | :--- | :--- |
@@ -30,16 +30,16 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 
 ---
 
-# Pantallas o recorridos cubiertos
+## Pantallas o recorridos cubiertos
 
-## HU-01 — Reserva de sala
+### HU-01 — Reserva de sala
 
 - **Selector de escenario Gherkin:** Permite alternar entre los cuatro escenarios de la historia y ver la reacción del sistema en tiempo real.
 - **Tarjetas dinámicas de sala:** Representación visual de la Sala Multimedia A y Silencio B, con indicadores de ocupación y estados visuales reactivos (borde azul para disponible, rojo y opacidad reducida para lleno).
 - **Gestor de identidad dinámico:** Botones que cambian según el escenario para simular peticiones de diferentes usuarios (Lucas Martínez, Ana Lizondo, Bruno Díaz) con marcas temporales para validar concurrencia.
 - **Log de transacciones:** Panel de historial que registra cada éxito o rechazo, vinculando la acción a la entidad `HistorialEstado` del modelo de dominio.
 
-## HU-02 — Consulta de disponibilidad
+### HU-02 — Consulta de disponibilidad
 
 - **Selector de escenario Gherkin:** Cubre los cuatro escenarios definidos en `HU-02.feature`.
 - **Indicador de fecha consultada:** Muestra la fecha de la consulta (`27/04/2026` o `01/01/2030`) para reflejar el parámetro del paso `Cuando`.
@@ -47,24 +47,24 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 - **Resumen de consulta:** Chips que indican la cantidad de salas retornadas y el total de cupos disponibles.
 - **Empty state:** Cuando no existen turnos configurados para la fecha, se muestra un estado vacío que refleja el retorno de lista vacía del endpoint.
 
-## HU-03 — Cancelación de reserva
+### HU-03 — Cancelación de reserva
 
 - **Selector de escenario Gherkin:** Cubre los cinco escenarios definidos en `HU-03.feature`.
 - **Tarjeta de reserva con estado reactivo:** Muestra el código, titular, sala y turno. El borde y la opacidad cambian al transicionar de `confirmada` a `cancelada`.
 - **Indicador de cupo dinámico:** Barra de progreso que refleja la liberación del cupo al confirmar la cancelación (RN-04).
 - **Validaciones de error:** Mensajes específicos para reserva ya cancelada, falta de titularidad y código inexistente.
 
-## HU-04 — Registro de asistencia
+### HU-04 — Registro de asistencia
 
 - **Selector de escenario Gherkin:** Cubre los cuatro escenarios de `HU-04.feature` incluyendo el esquema parametrizado.
 - **Reloj de turno simulado:** Indicador de hora que avanza de `10:00` (turno activo) a `11:01` (turno finalizado) al simular el proceso automático de ausencias.
-- **Filas de reserva por estudiante:** Cada fila muestra código, nombre, legajo, sala y estado actual con badge de color.
+- **Filas de reserva por estudiante:** Cada fila muestra código, nombre, legajo, sala y estado actual con badge de color. Ademas de que `Personal` fue encargado de dar check in
 - **Procesamiento de ausencias automático:** Botón que simula el fin del turno y dispara el marcado automático de `RES-0901` como `ausente` (RN-09).
 - **Tabla de historial parametrizada:** Vista del esquema del escenario con los dos casos de la tabla de ejemplos del feature.
 
 ---
 
-# Storybook
+## Storybook
 
 - **Punto de entrada:** `docs/ux/storybook/index.html` — selector central con navegación por historia y sección.
 - **Stories:**
@@ -76,14 +76,14 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 
 ---
 
-# Link read-only
+## Link read-only
 
 - **Prototipo interactivo:** http://127.0.0.1:5500/2026-1c-tpi-Agusb04/docs/ux/storybook/index.html
 - **Estado:** Congelado para entrega TPI — Ejercicio 03.
 
 ---
 
-# Export congelado
+## Export congelado
 
 - `docs/ux/exports/HU-01-reserva-exitosa.png`: Muestra el feedback positivo y el registro en el historial tras una reserva exitosa.
 - `docs/ux/exports/HU-01-error-capacidad.png`: Muestra la Sala B bloqueada y el mensaje de error al intentar exceder el cupo físico (RN-01).
@@ -92,7 +92,7 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 
 ---
 
-# Decisiones de UX visibles
+## Decisiones de UX visibles
 
 1. **Feedback dinámico de estado:** Cada story usa señales visuales (colores de borde, opacidad, badges) para comunicar el estado de las entidades del dominio sin depender solo de texto.
 

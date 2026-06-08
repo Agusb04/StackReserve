@@ -19,11 +19,17 @@ class Turno {
 class Estudiante {
   legajo {id}
   nombre
+  estadoHabilitacion
+}
+
+class Personal {
+  legajo {id}
+  nombre
 }
 
 class Reserva {
   codigo {id}
-  estado
+  /estado
   fechaCreacion
 }
 
@@ -37,5 +43,6 @@ Sala "1" -- "0..*" Turno : tiene
 Turno "1" -- "0..*" Reserva : agrupa
 Estudiante "1" -- "0..*" Reserva : posee
 Reserva "1" -- "1..*" HistorialEstado : registra
+Personal "1" -- "0..*" HistorialEstado : audita
 
 @enduml

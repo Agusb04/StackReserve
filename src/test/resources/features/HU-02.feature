@@ -12,7 +12,7 @@ Característica: Consultar disponibilidad de salas para un día determinado
       | SALA-B | Sala Silencio B   | 4         |
     Y que el estudiante "Lucas Martínez" ha iniciado sesión correctamente
 
-  Regla: Se listan todas las salas con su cupo disponible para el día consultado
+  Regla: La consulta refleja dinámicamente los cupos remanentes de cada espacio de estudio
 
     Escenario: Consulta de disponibilidad con salas libres
       Dado que no existen reservas confirmadas para el 27/04/2026
@@ -33,7 +33,7 @@ Característica: Consultar disponibilidad de salas para un día determinado
       Entonces la "Sala Silencio B" figura con 0 cupos disponibles
       Y la "Sala Multimedia A" figura con 6 cupos disponibles
 
-  Regla: Una consulta para un día sin turnos configurados retorna lista vacía
+  Regla: Los días que no registran oferta horaria asignada se presentan sin resultados
 
     Escenario: Consulta de disponibilidad para un día sin turnos
       Dado que no existen turnos configurados para el 01/01/2030

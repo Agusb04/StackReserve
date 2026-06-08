@@ -1,28 +1,20 @@
 package ar.edu.fiuba.is1.tpi.domain;
 
-public class Estudiante {
+import java.util.Objects;
 
-  private String legajo;
-  private String nombre;
+public record Estudiante(String legajo, String nombre, String estadoHabilitacion) {
+
+  public Estudiante {
+    Objects.requireNonNull(legajo, "El legajo no puede ser nulo");
+    Objects.requireNonNull(nombre, "El nombre no puede ser nulo");
+    Objects.requireNonNull(estadoHabilitacion, "El estado de habilitación no puede ser nulo");
+
+    legajo = legajo.trim();
+    nombre = nombre.trim();
+    estadoHabilitacion = estadoHabilitacion.trim().toUpperCase();
+  }
 
   public Estudiante(String legajo, String nombre) {
-    this.legajo = legajo;
-    this.nombre = nombre;
-  }
-
-  public String getLegajo() {
-    return legajo;
-  }
-
-  public void setLegajo(String legajo) {
-    this.legajo = legajo;
-  }
-
-  public String getNombre() {
-    return nombre;
-  }
-
-  public void setNombre(String nombre) {
-    this.nombre = nombre;
+    this(legajo, nombre, "ACTIVO");
   }
 }

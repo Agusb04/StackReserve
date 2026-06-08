@@ -1,9 +1,9 @@
 package ar.edu.fiuba.is1.tpi.domain;
 
 public class Sala {
-  private String codigo;
-  private String nombre;
-  private int capacidadMaxima;
+  private final String codigo;
+  private final String nombre;
+  private final int capacidadMaxima;
 
   public Sala(String codigo, String nombre, int capacidadMaxima) {
     this.codigo = codigo;

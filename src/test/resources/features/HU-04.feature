@@ -1,4 +1,5 @@
 # language: es
+@registrar-asistencia
 Característica: Registrar la asistencia de un estudiante al inicio de su turno
   Para validar el uso efectivo de la sala y contabilizar ausencias,
   Como personal de biblioteca,
@@ -11,7 +12,7 @@ Característica: Registrar la asistencia de un estudiante al inicio de su turno
       | RES-0892 | Lucía Gómez   | EST-1042 | Sala A |
       | RES-0901 | Martín Torres | EST-2087 | Sala B |
 
-  Regla: El check-in valida el uso efectivo del turno y actualiza el estado de la reserva
+  Regla: El registro presencial consolida la ocupación efectiva del recurso en tiempo real
 
     Escenario: Check-in exitoso al inicio del turno
       Dado que la reserva RES-0892 no tiene asistencia registrada
@@ -27,7 +28,7 @@ Característica: Registrar la asistencia de un estudiante al inicio de su turno
       Entonces se rechaza la acción
       Y se muestra el mensaje "La reserva RES-0892 ya tiene asistencia registrada"
 
-  Regla: Si el turno finaliza sin check-in se marca la reserva como ausente automáticamente
+  Regla: La ausencia del estudiante penaliza la reserva modificando su estado de manera automática al cierre del bloque
 
     Escenario: Marcado automático de ausencia al finalizar el turno sin check-in
       Dado que la reserva RES-0901 tiene estado "confirmada"
