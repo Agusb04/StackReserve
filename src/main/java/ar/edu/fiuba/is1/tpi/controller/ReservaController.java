@@ -21,8 +21,20 @@ public class ReservaController {
 
   @Autowired private ReservaService service;
 
+  @PostMapping("/reservas/procesar-ausencias")
+  public ResponseEntity<?> procesarAusencias() {
+    try {
+      int count = service.procesarAusencias();
+      return ResponseEntity.ok("Reservas marcadas como ausente: " + count);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
   @GetMapping("/salas/disponibilidad")
-  public ResponseEntity<?> disponibilidad(@RequestParam String fecha) {
+  public ResponseEntity<?> disponibilidad(
+      @RequestParam @org.springframework.format.annotation.DateTimeFormat(pattern = "dd/MM/yyyy")
+          java.time.LocalDate fecha) {
     return ResponseEntity.ok(service.consultarDisponibilidad(fecha));
   }
 
@@ -37,24 +49,21 @@ public class ReservaController {
 
   @PostMapping("/reservas/{codigo}/cancelar")
   public ResponseEntity<?> cancelar(@PathVariable String codigo, @RequestParam String solicitante) {
-
     try {
-      String nombreDecodificado = URLDecoder.decode(solicitante, StandardCharsets.UTF_8);
-
-      return ResponseEntity.ok(service.cancelarReserva(codigo, nombreDecodificado));
-
+      String nombreDecodificado = URLDecoder.decode(solicitante, StandardCharsets.UTF_8).trim();
+      return ResponseEntity.ok(service.cancelarReserva(codigo.trim(), nombreDecodificado));
     } catch (IllegalStateException | SecurityException | NoSuchElementException e) {
-
       return ResponseEntity.badRequest().body(e.getMessage());
     }
   }
 
   @PostMapping("/reservas/{codigo}/check-in")
-  public ResponseEntity<?> checkIn(@PathVariable String codigo) {
-
+  public ResponseEntity<?> checkIn(
+      @PathVariable String codigo,
+      @RequestParam(required = false, defaultValue = "SISTEMA") String operario) {
     try {
-      return ResponseEntity.ok(service.checkIn(codigo));
-
+      String nombreDecodificado = URLDecoder.decode(operario, StandardCharsets.UTF_8).trim();
+      return ResponseEntity.ok(service.checkIn(codigo.trim(), nombreDecodificado));
     } catch (IllegalStateException | NoSuchElementException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -62,10 +71,8 @@ public class ReservaController {
 
   @GetMapping("/reservas/{codigo}/historial")
   public ResponseEntity<?> historial(@PathVariable String codigo) {
-
     try {
-      return ResponseEntity.ok(service.obtenerHistorial(codigo));
-
+      return ResponseEntity.ok(service.obtenerHistorial(codigo.trim()));
     } catch (NoSuchElementException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }

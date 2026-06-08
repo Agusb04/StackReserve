@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Turno {
-  private LocalDate fecha;
-  private LocalTime horaInicio;
-  private LocalTime horaFin;
+  private final LocalDate fecha;
+  private final LocalTime horaInicio;
+  private final LocalTime horaFin;
 
   public Turno(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
     this.fecha = fecha;

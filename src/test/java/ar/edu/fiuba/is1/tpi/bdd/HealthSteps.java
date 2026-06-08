@@ -13,7 +13,7 @@ public class HealthSteps {
 
   @Autowired private TestRestTemplate restTemplate;
 
-  private ResponseEntity<PingMessage> response;
+  private ResponseEntity<PingMessage> response = null;
 
   @Cuando("consulto el endpoint de health")
   public void consulto_el_endpoint_de_health() {

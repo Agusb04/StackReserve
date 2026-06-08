@@ -1,6 +1,7 @@
 package ar.edu.fiuba.is1.tpi.service;
 
 import ar.edu.fiuba.is1.tpi.domain.Estudiante;
+import ar.edu.fiuba.is1.tpi.domain.Personal;
 import ar.edu.fiuba.is1.tpi.domain.Reserva;
 import ar.edu.fiuba.is1.tpi.domain.Sala;
 import ar.edu.fiuba.is1.tpi.domain.Turno;
@@ -11,8 +12,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -27,189 +28,166 @@ public class ReservaService {
   @Autowired private EstudianteRepository estudianteRepository;
 
   private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
   private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-  public static class DisponibilidadDTO {
-    public String nombreSala;
-    public int cuposDisponibles;
+  public record DisponibilidadDTO(String nombreSala, int cuposDisponibles) {}
 
-    public DisponibilidadDTO(String n, int c) {
-      this.nombreSala = n;
-      this.cuposDisponibles = c;
-    }
-  }
+  public record HistorialDTO(String estado, String fechaRegistro, String operario) {}
 
-  public List<DisponibilidadDTO> consultarDisponibilidad(String fechaStr) {
-
-    if ("01/01/2030".equals(fechaStr)) {
-      return Collections.emptyList();
-    }
-
+  public List<DisponibilidadDTO> consultarDisponibilidad(LocalDate fecha) {
+    List<Sala> salas = salaRepository.findAll();
     List<DisponibilidadDTO> result = new ArrayList<>();
 
-    for (Sala s : salaRepository.findAll()) {
-
-      long ocupados =
-          reservaRepository.findAll().stream()
-              .filter(
-                  r ->
-                      r.getSala().getNombre().equals(s.getNombre())
-                          && r.getEstado().equalsIgnoreCase("confirmada"))
-              .count();
-
+    for (Sala s : salas) {
+      long ocupados = reservaRepository.countReservasActivas(s.getNombre(), fecha);
       result.add(
           new DisponibilidadDTO(
               s.getNombre(), Math.max(0, s.getCapacidadMaxima() - (int) ocupados)));
     }
-
     return result;
   }
 
-  public String crearReserva(Map<String, String> payload) {
+  public synchronized String crearReserva(Map<String, String> payload) {
+    validarPayload(payload);
 
-    String estLegajo = payload.get("nombreEstudiante");
-    String salaN = payload.get("nombreSala");
-    String fStr = payload.get("fecha");
-
-    LocalDate fecha = LocalDate.parse(fStr, DATE_FMT);
-
-    LocalTime horaInicio = LocalTime.parse(payload.get("horaInicio"), TIME_FMT);
-
-    LocalTime horaFin = LocalTime.parse(payload.get("horaFin"), TIME_FMT);
+    String estudianteBusqueda = payload.get("nombreEstudiante").trim();
+    String salaBusqueda = payload.get("nombreSala").trim();
 
     Sala sala =
-        salaRepository.findAll().stream()
-            .filter(s -> s.getNombre().contains(salaN))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No existe la sala"));
+        salaRepository
+            .findByNombreIgnoreCase(salaBusqueda)
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "No existe la sala con el nombre exacto: " + salaBusqueda));
 
     Estudiante est =
         estudianteRepository.findAll().stream()
-            .filter(e -> e.getLegajo().equals(estLegajo) || e.getNombre().equals(estLegajo))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No existe el estudiante"));
-
-    long ocupados =
-        reservaRepository.findAll().stream()
             .filter(
-                r ->
-                    r.getSala().getNombre().equalsIgnoreCase(sala.getNombre())
-                        && r.getEstado().equalsIgnoreCase("confirmada")
-                        && r.getTurno().getFecha().equals(fecha)
-                        && r.getTurno().getHoraInicio().equals(horaInicio)
-                        && r.getTurno().getHoraFin().equals(horaFin))
-            .count();
+                e ->
+                    e.legajo().equalsIgnoreCase(estudianteBusqueda)
+                        || e.nombre().equalsIgnoreCase(estudianteBusqueda))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException("No existe el estudiante: " + estudianteBusqueda));
 
-    if (ocupados >= sala.getCapacidadMaxima()) {
+    LocalDate fecha = LocalDate.parse(payload.get("fecha").trim(), DATE_FMT);
+    LocalTime horaInicio = LocalTime.parse(payload.get("horaInicio").trim(), TIME_FMT);
+    LocalTime horaFin = LocalTime.parse(payload.get("horaFin").trim(), TIME_FMT);
+
+    long cuposOcupados =
+        reservaRepository.countByTurnoYSala(sala.getCodigo(), fecha, horaInicio, horaFin);
+    if (cuposOcupados >= sala.getCapacidadMaxima()) {
       throw new IllegalStateException(
           "Lo sentimos, la "
               + sala.getNombre()
               + " ya está completa para este turno. Probá con otro horario.");
     }
 
-    boolean duplicado =
-        reservaRepository.findAll().stream()
-            .anyMatch(
-                r ->
-                    r.getEstudiante().getNombre().equalsIgnoreCase(est.getNombre())
-                        && r.getEstado().equalsIgnoreCase("confirmada")
-                        && r.getTurno().getFecha().equals(fecha)
-                        && r.getTurno().getHoraInicio().equals(horaInicio)
-                        && r.getTurno().getHoraFin().equals(horaFin));
-
-    if (duplicado) {
+    if (reservaRepository.existsByEstudianteYTurno(est.legajo(), fecha, horaInicio, horaFin)) {
       throw new IllegalStateException(
           "Ya posees una reserva para este horario. No puedes reservar dos salas simultáneamente.");
     }
 
-    reservaRepository.save(
-        new Reserva(
-            "RES-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(),
-            "confirmada",
-            est,
-            sala,
-            new Turno(fecha, horaInicio, horaFin)));
+    String codigo = "RES-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.ROOT);
 
-    return "¡Reserva confirmada! Te esperamos en la "
+    Reserva nuevaReserva = new Reserva(codigo, est, sala, new Turno(fecha, horaInicio, horaFin));
+    reservaRepository.save(nuevaReserva);
+
+    return codigo
+        + " | ¡Reserva confirmada! Te esperamos en la "
         + sala.getNombre()
         + " el "
-        + fStr
+        + payload.get("fecha").trim()
         + " a las "
         + horaInicio.format(TIME_FMT)
         + ".";
   }
 
-  public String cancelarReserva(String codigo, String solicitante) {
-
+  public synchronized String cancelarReserva(String codigo, String solicitante) {
     Reserva r =
         reservaRepository
             .findById(codigo)
             .orElseThrow(() -> new NoSuchElementException("No existe reserva " + codigo));
 
-    if (r.getEstado().equalsIgnoreCase("cancelada")) {
-      throw new IllegalStateException("La reserva " + codigo + " ya se encuentra cancelada");
-    }
-
-    if (!r.getEstudiante().getNombre().equalsIgnoreCase(solicitante)) {
-
-      throw new SecurityException(
-          "No tenés permiso para cancelar esta reserva ya que no te pertenece");
-    }
-
-    String fechaTurno =
-        r.getTurno().getFecha() != null ? r.getTurno().getFecha().format(DATE_FMT) : "??/??/????";
-
-    r.setEstado("cancelada");
+    r.cancelar(solicitante.trim());
     reservaRepository.save(r);
 
     return "Hola "
-        + r.getEstudiante().getNombre().split(" ")[0]
+        + r.getEstudiante().nombre().split(" ")[0]
         + ", tu reserva en la "
         + r.getSala().getNombre()
         + " para el "
-        + fechaTurno
+        + r.getTurno().getFecha().format(DATE_FMT)
         + " ha sido cancelada con éxito.";
   }
 
-  public String checkIn(String codigo) {
+  public synchronized String checkIn(String codigo, String nombreOperario) {
+    Reserva r =
+        reservaRepository
+            .findById(codigo)
+            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
 
-    Reserva r = reservaRepository.findById(codigo).orElseThrow();
+    Personal operario =
+        new Personal(
+            "LEG-"
+                + Integer.toUnsignedString(nombreOperario.trim().hashCode())
+                    .substring(0, 3)
+                    .toUpperCase(),
+            nombreOperario.trim());
 
-    if (r.getEstado().equalsIgnoreCase("presente")) {
-      throw new IllegalStateException("La reserva " + codigo + " ya tiene asistencia registrada");
-    }
-
-    String fechaTurno =
-        r.getTurno().getFecha() != null ? r.getTurno().getFecha().format(DATE_FMT) : "??/??/????";
-
-    String horaTurno =
-        r.getTurno().getHoraInicio() != null
-            ? r.getTurno().getHoraInicio().format(TIME_FMT)
-            : "??:??";
-
-    r.setEstado("presente");
+    r.registrarAsistencia(operario);
     reservaRepository.save(r);
 
     return "Asistencia registrada: "
-        + r.getEstudiante().getNombre()
+        + r.getEstudiante().nombre()
         + " ("
-        + r.getEstudiante().getLegajo()
+        + r.getEstudiante().legajo()
         + "), "
         + r.getSala().getNombre()
         + ", "
-        + fechaTurno
+        + r.getTurno().getFecha().format(DATE_FMT)
         + " "
-        + horaTurno;
+        + r.getTurno().getHoraInicio().format(TIME_FMT);
   }
 
-  public Object obtenerHistorial(String codigo) {
+  public synchronized int procesarAusencias() {
+    LocalDate hoy = LocalDate.now();
+    LocalTime ahora = LocalTime.now();
 
+    List<Reserva> pendientes = reservaRepository.findPendientesDeAusencia(hoy, ahora);
+
+    pendientes.forEach(Reserva::marcarAusenciaAutomatica);
+    pendientes.forEach(reservaRepository::save);
+
+    return pendientes.size();
+  }
+
+  public List<HistorialDTO> obtenerHistorial(String codigo) {
     Reserva reserva =
         reservaRepository
             .findById(codigo)
             .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
 
-    return reserva.getHistorial();
+    return reserva.getHistorial().stream()
+        .map(
+            h ->
+                new HistorialDTO(
+                    h.getEstado(),
+                    h.getFechaRegistro().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                    h.getOperario()))
+        .toList();
+  }
+
+  private void validarPayload(Map<String, String> payload) {
+    if (payload == null
+        || !payload.containsKey("nombreEstudiante")
+        || !payload.containsKey("nombreSala")
+        || !payload.containsKey("fecha")
+        || !payload.containsKey("horaInicio")
+        || !payload.containsKey("horaFin")) {
+      throw new IllegalArgumentException("Payload inválido o incompleto");
+    }
   }
 }

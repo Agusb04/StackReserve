@@ -9,7 +9,7 @@ Característica: Cancelar una reserva confirmada
     Dado que el estudiante "Juan Pérez" ha iniciado sesión en la plataforma
     Y que existe una reserva confirmada con código RES-0892 en la "Sala de Estudio A" para el día 27/04/2026 de 10:00 a 11:00 a nombre de "Juan Pérez"
 
-  Regla: Una cancelación debe liberar cupo en el turno correspondiente
+  Regla: El procesamiento de una cancelación reintegra de inmediato el cupo al inventario público
 
     Escenario: Cancelación exitosa realizada por el titular
       Cuando "Juan Pérez" solicita cancelar la reserva RES-0892

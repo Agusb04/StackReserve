@@ -1,4 +1,5 @@
 # language: es
+@creacion-reserva
 Característica: Reservar un turno en una sala disponible
   Para garantizar mi lugar de estudio sin depender de la asistencia del personal administrativo,
   Como Estudiante,
@@ -9,7 +10,7 @@ Característica: Reservar un turno en una sala disponible
     Y que la "Sala de Silencio B" tiene capacidad para 4 personas
     Y que el estudiante "Lucas Martínez" ha iniciado sesión correctamente
 
-  Regla: No se puede superar la capacidad máxima de la sala para un mismo turno
+  Regla: El sistema valida la disponibilidad de cupos antes de confirmar la reserva
 
     Escenario: Reserva exitosa en sala con cupo disponible
       Dado que en la "Sala de Multimedia A" para el 27/04/2026 de 10:00 a 11:00 hay cupo disponible
@@ -25,7 +26,7 @@ Característica: Reservar un turno en una sala disponible
       Y se muestra el mensaje "Lo sentimos, la Sala de Silencio B ya está completa para este turno. Probá con otro horario."
       Y la reserva no es registrada
 
-  Regla: Un estudiante no puede tener reservas solapadas en el mismo horario
+  Regla: Se restringe a los estudiantes poseer reservas simultáneas en un mismo bloque horario
 
     Escenario: Intento de reserva duplicada en el mismo turno
       Dado que el estudiante "Lucas Martínez" ya tiene una reserva confirmada en la "Sala de Multimedia A" para el 27/04/2026 de 10:00 a 11:00
@@ -34,7 +35,7 @@ Característica: Reservar un turno en una sala disponible
       Y se muestra el mensaje "Ya posees una reserva para este horario. No puedes reservar dos salas simultáneamente."
       Y la segunda reserva no es registrada
 
-  Regla: El sistema asigna turnos por orden de llegada (First-Come, First-Served)
+  Regla: Las solicitudes concurrentes se procesan estrictamente por orden de llegada
 
     Esquema del escenario: Dos solicitudes para el mismo turno con una sola vacante disponible
       Dado que la "Sala de Multimedia A" el 27/04/2026 de 16:00 a 17:00 tiene 5 reservas confirmadas de las 6 posibles
