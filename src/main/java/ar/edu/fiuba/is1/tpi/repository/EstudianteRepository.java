@@ -2,31 +2,32 @@ package ar.edu.fiuba.is1.tpi.repository;
 
 import ar.edu.fiuba.is1.tpi.domain.Estudiante;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class EstudianteRepository {
-  private final Map<String, Estudiante> db = new HashMap<>();
+  private final Map<String, Estudiante> db = new ConcurrentHashMap<>();
 
   public void save(Estudiante estudiante) {
     if (estudiante != null && estudiante.legajo() != null) {
-      db.put(estudiante.legajo().trim().toUpperCase(), estudiante);
+      db.put(estudiante.legajo().trim().toUpperCase(Locale.ROOT), estudiante);
     }
   }
 
   public boolean existsById(String id) {
-    return id != null && db.containsKey(id.trim().toUpperCase());
+    return id != null && db.containsKey(id.trim().toUpperCase(Locale.ROOT));
   }
 
   public Optional<Estudiante> findById(String id) {
     if (id == null) {
       return Optional.empty();
     }
-    return Optional.ofNullable(db.get(id.trim().toUpperCase()));
+    return Optional.ofNullable(db.get(id.trim().toUpperCase(Locale.ROOT)));
   }
 
   public Optional<Estudiante> findByNombreIgnoreCase(String nombre) {
@@ -45,7 +46,7 @@ public class EstudianteRepository {
       return Optional.empty();
     }
 
-    String legajoLimpio = legajo.trim().toUpperCase();
+    String legajoLimpio = legajo.trim().toUpperCase(Locale.ROOT);
     String nombreLimpio = nombre.trim();
 
     if (db.containsKey(legajoLimpio)) {

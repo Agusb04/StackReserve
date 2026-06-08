@@ -203,36 +203,40 @@ public class CancelacionSteps {
   @Entonces(
       "^se incrementa en (\\d+) el cupo disponible en la \"([^\"]*)\" para el turno de las"
           + " (\\d{2}:\\d{2})$")
-  public void verificarCupoLiberado(int incremento, String nombreSala, String hora)
-      throws Exception {
-    assertThat(state.getLastResponse()).isNotNull();
-    assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+  public void verificarCupoLiberado(int incremento, String nombreSala, String hora) {
+    try {
+      assertThat(state.getLastResponse()).isNotNull();
+      assertThat(state.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
 
-    String fechaConsulta = state.getUltimaFechaConsultada();
-    if (fechaConsulta == null) {
-      fechaConsulta = "27/04/2026";
+      String fechaConsulta = state.getUltimaFechaConsultada();
+      if (fechaConsulta == null) {
+        fechaConsulta = "27/04/2026";
+      }
+
+      ResponseEntity<String> response =
+          restTemplate.getForEntity(
+              "/api/salas/disponibilidad?fecha=" + fechaConsulta, String.class);
+      assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+      List<Map<String, Object>> salas =
+          objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+
+      boolean tieneCuposDisponibles =
+          salas.stream()
+              .anyMatch(
+                  d -> {
+                    String nombreS = String.valueOf(d.getOrDefault("nombreSala", ""));
+                    int cupos = (int) d.getOrDefault("cuposDisponibles", 0);
+                    return nombreS.toLowerCase().contains(nombreSala.toLowerCase().trim())
+                        && cupos > 0;
+                  });
+
+      assertThat(tieneCuposDisponibles)
+          .withFailMessage("La sala '%s' debería registrar cupos liberados.", nombreSala)
+          .isTrue();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-
-    ResponseEntity<String> response =
-        restTemplate.getForEntity("/api/salas/disponibilidad?fecha=" + fechaConsulta, String.class);
-    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-
-    List<Map<String, Object>> salas =
-        objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-
-    boolean tieneCuposDisponibles =
-        salas.stream()
-            .anyMatch(
-                d -> {
-                  String nombreS = String.valueOf(d.getOrDefault("nombreSala", ""));
-                  int cupos = (int) d.getOrDefault("cuposDisponibles", 0);
-                  return nombreS.toLowerCase().contains(nombreSala.toLowerCase().trim())
-                      && cupos > 0;
-                });
-
-    assertThat(tieneCuposDisponibles)
-        .withFailMessage("La sala '%s' debería registrar cupos liberados.", nombreSala)
-        .isTrue();
   }
 
   private void completarEstadoTrazabilidad(ar.edu.fiuba.is1.tpi.domain.Reserva r, String estado) {

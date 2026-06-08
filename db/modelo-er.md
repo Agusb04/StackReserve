@@ -106,22 +106,21 @@ Reglas actualizadas:
 
 ## Columnas DER no mapeadas actualmente en el modelo Java
 
-En la implementación actual (repositorios en memoria y objetos de dominio), las siguientes
-columnas del DER no tienen un atributo directo en las clases Java listadas arriba. Esto es
-intencional y forma parte del roadmap de migración a JPA:
+En la implementación previa estas columnas no estaban mapeadas. Tras los cambios recientes
+la situación es la siguiente:
 
-- `reserva.fecha_creacion` (datetime): en el DER aparece como columna de auditoría. En la
-  implementación actual la marca temporal de creación no se guarda como atributo en
-  `Reserva.java`. Si se migra a JPA se recomienda agregar `fechaCreacion` (LocalDateTime)
-  con valor inicial en el constructor.
+- `reserva.fecha_creacion` (datetime): originalmente no estaba persistida en `Reserva.java`.
+  Esta columna ahora está representada en la implementación como `fechaCreacion` (LocalDateTime)
+  inicializada en el constructor de `Reserva`. Por lo tanto ya no forma parte del backlog
+  de mapeo para la migración a JPA.
 - `historial_estado.id_historial` (int autoincremental): el DER define un PK autonumérico
-  para los eventos de historial. En la implementación actual `HistorialEstado` no expone
-  un id: el orden cronológico se garantiza por `fechaRegistro`. En persistencia relacional
+  para los eventos de historial. En la implementación actual `HistorialEstado` sigue sin exponer
+  un id; el orden cronológico se garantiza por `fechaRegistro`. En persistencia relacional
   se recomienda materializar `id_historial` como columna @Id generada para facilitar
   referenciación y consultas por rango.
 
-Ambas ausencias están documentadas intencionalmente: mantienen el modelo en memoria simple
-mientras se preserva la visión relacional y la trazabilidad requerida por el DER.
+Estas ausencias son intencionales: se mantiene el modelo en memoria simple mientras se
+preserva la visión relacional y la trazabilidad requerida por el DER.
 
 ---
 

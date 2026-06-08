@@ -47,7 +47,7 @@ Cubre el ciclo de vida de una reserva de sala de estudio desde su creación, con
 | `Sala` | HU-01, HU-02, RF-08 | Recurso físico cuantificable con nombre y capacidad máxima definida. |
 | `Turno` | HU-01, HU-02, RN-02 | Unidad conceptual reservable vinculada a una fecha y un bloque horario (`horaInicio`/`horaFin`). |
 | `Estudiante` | HU-01, HU-03, HU-04, RN-10 | Sujeto central del sistema. Incorpora el estado de su condición para dar respuesta estructural a penalizaciones. |
-| `Personal` | HU-04, HU-07 | Entidad requerida ante la necesidad de recordar (`need-to-remember`) qué agente auditó el check-in presencial. |
+| `Personal` | HU-04, HU-07 | Entidad requerida ante la necesidad de recordar (`need-to-remember`) qué agente auditó el check-in presencial en futuras iteraciones. |
 | `Reserva` | HU-01, HU-03, HU-04 | Transacción central que vincula un estudiante con un turno específico. |
 | `HistorialEstado` | HU-04, RN-06, RN-09 | Registro inmutable de trazabilidad temporal para cada cambio de estado de la reserva. |
 
@@ -62,7 +62,7 @@ Cubre el ciclo de vida de una reserva de sala de estudio desde su creación, con
 | `Estudiante` | `legajo {id}`, `nombre`, `estadoHabilitacion` | HU-04 (EST-1042), RN-10, D-02 ("ACTIVO", "SUSPENDIDO") |
 | `Personal` | `legajo {id}`, `nombre` | HU-04 ("Ana Pérez", Personal de biblioteca) |
 | `Reserva` | `codigo {id}`, `/estado`, `fechaCreacion` | RN-03, HU-01, HU-03 (RES-0892). El estado es derivado (`/`). |
-| `HistorialEstado` | `fechaRegistro`, `estado` | HU-04, RN-06, RN-09 ("confirmada","presente", "ausente", "cancelada") |
+| `HistorialEstado` | `fechaRegistro`, `estado`| HU-04, RN-06, RN-09 ("confirmada","presente", "ausente", "cancelada") |
 
 ---
 
@@ -80,10 +80,6 @@ Cubre el ciclo de vida de una reserva de sala de estudio desde su creación, con
 
 ## Decisiones de modelado y correcciones de pureza (Larman)
 
-**Operario / relación con Personal (nota sobre implementación):**
-En el nivel conceptual preferimos una asociación desde `HistorialEstado` hacia la entidad `Personal` cuando existe la necesidad de recordar quién auditó un cambio. Sin embargo, en la implementación actual se guarda el nombre del operario como un `String` dentro de `HistorialEstado` (campo `operario`) y la clase `Personal` existe en el dominio para facilitar la futura migración.
-
-Esta decisión permite cumplir de forma inmediata los requisitos de trazabilidad sin introducir dependencias de persistencia adicionales en esta iteración. La intención es migrar la columna `legajo_personal` del DER a una referencia técnica (`FK`) hacia `personal(legajo)` cuando se adopte JPA/H2 o PostgreSQL en una iteración posterior.
 
 **Modelado del `/estado` como atributo derivado en `Reserva`:**
 Dado que el ciclo de vida de la reserva se registra de manera cronológica en la entidad `HistorialEstado`, el "estado actual" de la reserva no constituye un atributo primitivo estático. Se define con la barra `/` como un atributo calculado/derivado, cuyo valor real conceptual se obtiene navegando hacia el último registro del historial.

@@ -72,9 +72,17 @@ public class ReservaService {
                 () ->
                     new IllegalArgumentException("No existe el estudiante: " + estudianteBusqueda));
 
-    LocalDate fecha = LocalDate.parse(payload.get("fecha").trim(), DATE_FMT);
-    LocalTime horaInicio = LocalTime.parse(payload.get("horaInicio").trim(), TIME_FMT);
-    LocalTime horaFin = LocalTime.parse(payload.get("horaFin").trim(), TIME_FMT);
+    LocalDate fecha;
+    LocalTime horaInicio;
+    LocalTime horaFin;
+    try {
+      fecha = LocalDate.parse(payload.get("fecha").trim(), DATE_FMT);
+      horaInicio = LocalTime.parse(payload.get("horaInicio").trim(), TIME_FMT);
+      horaFin = LocalTime.parse(payload.get("horaFin").trim(), TIME_FMT);
+    } catch (java.time.format.DateTimeParseException e) {
+      // Normalizar el error como IllegalArgumentException para que el controller devuelva 400
+      throw new IllegalArgumentException("Formato de fecha/hora inválido: " + e.getMessage());
+    }
 
     long cuposOcupados =
         reservaRepository.countByTurnoYSala(sala.getCodigo(), fecha, horaInicio, horaFin);
@@ -129,13 +137,10 @@ public class ReservaService {
             .findById(codigo)
             .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
 
-    Personal operario =
-        new Personal(
-            "LEG-"
-                + Integer.toUnsignedString(nombreOperario.trim().hashCode())
-                    .substring(0, 3)
-                    .toUpperCase(),
-            nombreOperario.trim());
+    // Generar un legajo estable y seguro a partir del hash del nombre del operario
+    int code = Math.abs(nombreOperario.trim().hashCode() % 1000);
+    String leg = "LEG-" + String.format(java.util.Locale.ROOT, "%03d", code);
+    Personal operario = new Personal(leg, nombreOperario.trim());
 
     r.registrarAsistencia(operario);
     reservaRepository.save(r);

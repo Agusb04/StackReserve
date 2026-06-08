@@ -11,7 +11,7 @@ Describir la separación lógica por capas del backend del sistema de gestión d
 | Controller | Recibe requests HTTP, valida firmas genéricas de entrada (`Map`) y devuelve respuestas REST JSON coherentes (`200 OK` o `400 Bad Request`).| Service | 
 | Service | Orquesta los casos de uso principales, extrae tipados seguros y aplica rigurosamente las reglas de negocio. | Domain, Repository |
 | Domain | Encapsula las reglas del negocio (estados de reserva, historial, cupo). Nota: el objeto `Turno` hoy está modelado como un valor embebido dentro de `Reserva` (no tiene id persistido en esta iteración). | Service |
-| Repository | Persiste y recupera entidades mediante estructuras de datos en memoria (`HashMap`). Los métodos críticos de los repositorios están sincronizados en la implementación actual para mitigar condiciones de carrera en esta iteración. | Service |
+| Repository | Persiste y recupera entidades mediante estructuras de datos en memoria (implementadas como `ConcurrentHashMap` o `HashMap` con sincronización). En la implementación actual `ReservaRepository` aplica sincronización en métodos críticos y `SalaRepository`/`EstudianteRepository` usan `ConcurrentHashMap` para reducir riesgos de condiciones de carrera. | Service |
 
 ## Diagrama
 
@@ -27,7 +27,7 @@ C4Component
         
         Component(domain, "Reserva / Sala / Turno / Estudiante / HistorialEstado", "Java", "POJOs que escapulan las reglas del negocio: transición de estados y registro automático en historial")
         
-        Component(repository, "ReservaRepository / SalaRepository / EstudianteRepository", "Spring Component", "Persiste y recupera entidades en HashMap en memoria. Expone validaciones de existencia mediante existsById")
+        Component(repository, "ReservaRepository / SalaRepository / EstudianteRepository", "Spring Component", "Persiste y recupera entidades en memoria (ConcurrentHashMap / HashMap sincronizado). Expone validaciones de existencia mediante existsById")
     }
     Rel(controller, service, "invoca")
     Rel(aux_controller, aux_service, "invoca")

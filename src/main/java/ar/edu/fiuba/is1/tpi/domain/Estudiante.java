@@ -1,5 +1,6 @@
 package ar.edu.fiuba.is1.tpi.domain;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public record Estudiante(String legajo, String nombre, String estadoHabilitacion) {
@@ -11,7 +12,7 @@ public record Estudiante(String legajo, String nombre, String estadoHabilitacion
 
     legajo = legajo.trim();
     nombre = nombre.trim();
-    estadoHabilitacion = estadoHabilitacion.trim().toUpperCase();
+    estadoHabilitacion = estadoHabilitacion.trim().toUpperCase(Locale.ROOT);
   }
 
   public Estudiante(String legajo, String nombre) {
