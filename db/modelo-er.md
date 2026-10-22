@@ -4,7 +4,7 @@
 
 Este modelo lógico describe el respaldo de datos para el flujo de pruebas y la API del sistema de reservas de salas de estudio. Está orientado a persistir y dar trazabilidad a reservas, turnos, auditoría de asistencia y penalizaciones latentes según el ciclo de vida descripto en el modelo de dominio.
 
-Incluye entidades, relaciones, atributos y correspondencias técnicas de tablas y claves relacionales (PK, FK), ajustado de acuerdo con la implementación actual en memoria y la proyección con JPA.
+Incluye entidades, relaciones, atributos y correspondencias técnicas de tablas y claves relacionales (PK, FK), ajustado de acuerdo con la implementación actual en memoria y la proyección con JPA. El esquema SQL de referencia está en `db/schema.sql`.
 
 ---
 

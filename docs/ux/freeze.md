@@ -2,8 +2,8 @@
 
 ## Link read-only
 
-- **Punto de entrada:** http://127.0.0.1:5500/2026-1c-tpi-Agusb04/docs/ux/storybook/index.html
-- **Estado:** Congelado para entrega TPI — Ejercicio 03.
+- **Punto de entrada:** http://localhost:8080/docs/ux/storybook/index.html
+- **Estado:** Congelado para entrega TPI — Ejercicio 04.
 
 ---
 
@@ -11,7 +11,7 @@
 
 - `docs/ux/storybook/index.html`: Punto de entrada central con navegación por historia priorizada y sección (Gestión de reservas / Operación del mostrador).
 - `docs/ux/storybook/src/HU-01-reserva.html`: Story funcional que implementa la lógica de reserva de salas, validación de cupos y restricciones de usuario (RN-01, RN-07, RN-10).
-- `docs/ux/storybook/src/HU-02-disponibilidad.html`: Story funcional que implementa la consulta de disponibilidad de salas para un día determinado, con los cuatro escenarios del feature: salas libres, parcialmente ocupadas, sin cupo y día sin turnos configurados (RF-01, RN-01, RN-02).
+- `docs/ux/storybook/src/HU-02-disponibilidad.html`: Story funcional que implementa la consulta de disponibilidad de salas para un día determinado, con los cuatro escenarios del feature: salas libres, parcialmente ocupadas, sin cupo y sin salas registradas (RF-01, RN-01, RN-02).
 - `docs/ux/storybook/src/HU-03-cancelacion.html`: Story funcional que implementa el flujo de cancelación de reservas, liberación de cupo y validaciones de titularidad y estado (RN-04, RN-06).
 - `docs/ux/storybook/src/HU-04-asistencia.html`: Story funcional que implementa el registro de asistencia (check-in), el marcado automático de ausencias al vencer el turno y la consulta del historial de estados (RN-06, RN-09).
 

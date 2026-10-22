@@ -17,7 +17,7 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 | **HU-02** | Consulta con salas libres (RF-01, RN-01) | `docs/ux/storybook/src/HU-02-disponibilidad.html` |
 | **HU-02** | Consulta con sala parcialmente ocupada | `docs/ux/storybook/src/HU-02-disponibilidad.html` |
 | **HU-02** | Consulta con sala sin cupo | `docs/ux/storybook/src/HU-02-disponibilidad.html` |
-| **HU-02** | Consulta para un día sin turnos configurados (lista vacía) | `docs/ux/storybook/src/HU-02-disponibilidad.html` |
+| **HU-02** | Consulta sin salas registradas (lista vacía) | `docs/ux/storybook/src/HU-02-disponibilidad.html` |
 | **HU-03** | Cancelación exitosa y liberación de cupo (RN-04) | `docs/ux/storybook/src/HU-03-cancelacion.html` |
 | **HU-03** | Turno liberado reservado nuevamente | `docs/ux/storybook/src/HU-03-cancelacion.html` |
 | **HU-03** | Rechazo por reserva ya cancelada | `docs/ux/storybook/src/HU-03-cancelacion.html` |
@@ -45,7 +45,7 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 - **Indicador de fecha consultada:** Muestra la fecha de la consulta (`27/04/2026` o `01/01/2030`) para reflejar el parámetro del paso `Cuando`.
 - **Tarjetas de sala con barra de cupo:** Cada sala muestra el número de lugares ocupados y disponibles con una barra de progreso coloreada según estado (verde para disponible, amarillo para parcial, rojo para sin cupo).
 - **Resumen de consulta:** Chips que indican la cantidad de salas retornadas y el total de cupos disponibles.
-- **Empty state:** Cuando no existen turnos configurados para la fecha, se muestra un estado vacío que refleja el retorno de lista vacía del endpoint.
+- **Empty state:** Cuando no hay salas registradas, se muestra un estado vacío que refleja el retorno de lista vacía del endpoint.
 
 ### HU-03 — Cancelación de reserva
 
@@ -78,8 +78,8 @@ Demostrar la viabilidad técnica y funcional del ciclo completo de reserva de sa
 
 ## Link read-only
 
-- **Prototipo interactivo:** http://127.0.0.1:5500/2026-1c-tpi-Agusb04/docs/ux/storybook/index.html
-- **Estado:** Congelado para entrega TPI — Ejercicio 03.
+- **Prototipo interactivo:** http://localhost:8080/docs/ux/storybook/index.html
+- **Estado:** Congelado para entrega TPI — Ejercicio 04.
 
 ---
 

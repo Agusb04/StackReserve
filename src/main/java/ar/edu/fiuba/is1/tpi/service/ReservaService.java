@@ -8,33 +8,60 @@ import ar.edu.fiuba.is1.tpi.domain.Turno;
 import ar.edu.fiuba.is1.tpi.repository.EstudianteRepository;
 import ar.edu.fiuba.is1.tpi.repository.ReservaRepository;
 import ar.edu.fiuba.is1.tpi.repository.SalaRepository;
+import ar.edu.fiuba.is1.tpi.service.dto.CrearReservaRequest;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReservaService {
 
-  @Autowired private SalaRepository salaRepository;
-  @Autowired private ReservaRepository reservaRepository;
-  @Autowired private EstudianteRepository estudianteRepository;
+  private final SalaRepository salaRepository;
+  private final ReservaRepository reservaRepository;
+  private final EstudianteRepository estudianteRepository;
+  private final Clock clock;
 
   private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
   private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Los repositorios y el reloj son colaboradores inyectados por Spring.")
+  public ReservaService(
+      SalaRepository salaRepository,
+      ReservaRepository reservaRepository,
+      EstudianteRepository estudianteRepository,
+      Clock clock) {
+    this.salaRepository = salaRepository;
+    this.reservaRepository = reservaRepository;
+    this.estudianteRepository = estudianteRepository;
+    this.clock = clock;
+  }
+
   public record DisponibilidadDTO(String nombreSala, int cuposDisponibles) {}
 
-  public record HistorialDTO(String estado, String fechaRegistro, String operario) {}
+  public record HistorialDTO(
+      String estado,
+      String fechaRegistro,
+      String operario,
+      String fechaTurno,
+      String horaInicio,
+      String horaFin) {}
 
   public List<DisponibilidadDTO> consultarDisponibilidad(LocalDate fecha) {
+    if (fecha == null) {
+      throw new IllegalArgumentException("La fecha es obligatoria para consultar disponibilidad.");
+    }
+
     List<Sala> salas = salaRepository.findAll();
     List<DisponibilidadDTO> result = new ArrayList<>();
 
@@ -47,11 +74,26 @@ public class ReservaService {
     return result;
   }
 
-  public synchronized String crearReserva(Map<String, String> payload) {
-    validarPayload(payload);
+  public synchronized String crearReserva(CrearReservaRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException("Payload inválido o incompleto");
+    }
 
-    String estudianteBusqueda = payload.get("nombreEstudiante").trim();
-    String salaBusqueda = payload.get("nombreSala").trim();
+    if (request.nombreEstudiante() == null
+        || request.nombreEstudiante().isBlank()
+        || request.nombreSala() == null
+        || request.nombreSala().isBlank()
+        || request.fecha() == null
+        || request.fecha().isBlank()
+        || request.horaInicio() == null
+        || request.horaInicio().isBlank()
+        || request.horaFin() == null
+        || request.horaFin().isBlank()) {
+      throw new IllegalArgumentException("Payload inválido o incompleto");
+    }
+
+    String estudianteBusqueda = request.nombreEstudiante().trim();
+    String salaBusqueda = request.nombreSala().trim();
 
     Sala sala =
         salaRepository
@@ -62,26 +104,35 @@ public class ReservaService {
                         "No existe la sala con el nombre exacto: " + salaBusqueda));
 
     Estudiante est =
-        estudianteRepository.findAll().stream()
-            .filter(
-                e ->
-                    e.legajo().equalsIgnoreCase(estudianteBusqueda)
-                        || e.nombre().equalsIgnoreCase(estudianteBusqueda))
-            .findFirst()
+        estudianteRepository
+            .findById(estudianteBusqueda)
+            .or(() -> estudianteRepository.findByNombreIgnoreCase(estudianteBusqueda))
             .orElseThrow(
                 () ->
                     new IllegalArgumentException("No existe el estudiante: " + estudianteBusqueda));
+
+    if (!"ACTIVO".equalsIgnoreCase(est.estadoHabilitacion())) {
+      throw new IllegalStateException(
+          "El estudiante "
+              + est.nombre()
+              + " no está habilitado para reservar (estado: "
+              + est.estadoHabilitacion()
+              + ").");
+    }
 
     LocalDate fecha;
     LocalTime horaInicio;
     LocalTime horaFin;
     try {
-      fecha = LocalDate.parse(payload.get("fecha").trim(), DATE_FMT);
-      horaInicio = LocalTime.parse(payload.get("horaInicio").trim(), TIME_FMT);
-      horaFin = LocalTime.parse(payload.get("horaFin").trim(), TIME_FMT);
-    } catch (java.time.format.DateTimeParseException e) {
-      // Normalizar el error como IllegalArgumentException para que el controller devuelva 400
+      fecha = LocalDate.parse(request.fecha().trim(), DATE_FMT);
+      horaInicio = LocalTime.parse(request.horaInicio().trim(), TIME_FMT);
+      horaFin = LocalTime.parse(request.horaFin().trim(), TIME_FMT);
+    } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Formato de fecha/hora inválido: " + e.getMessage());
+    }
+
+    if (!horaInicio.isBefore(horaFin)) {
+      throw new IllegalArgumentException("La hora de inicio debe ser anterior a la hora de fin.");
     }
 
     long cuposOcupados =
@@ -98,7 +149,7 @@ public class ReservaService {
           "Ya posees una reserva para este horario. No puedes reservar dos salas simultáneamente.");
     }
 
-    String codigo = "RES-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.ROOT);
+    String codigo = generarCodigoUnico();
 
     Reserva nuevaReserva = new Reserva(codigo, est, sala, new Turno(fecha, horaInicio, horaFin));
     reservaRepository.save(nuevaReserva);
@@ -107,19 +158,26 @@ public class ReservaService {
         + " | ¡Reserva confirmada! Te esperamos en la "
         + sala.getNombre()
         + " el "
-        + payload.get("fecha").trim()
+        + request.fecha().trim()
         + " a las "
         + horaInicio.format(TIME_FMT)
         + ".";
   }
 
   public synchronized String cancelarReserva(String codigo, String solicitante) {
+    if (solicitante == null || solicitante.isBlank()) {
+      throw new IllegalArgumentException(
+          "El solicitante es obligatorio para cancelar una reserva.");
+    }
+
+    String codigoLimpio = (codigo == null) ? "" : codigo.trim();
     Reserva r =
         reservaRepository
-            .findById(codigo)
-            .orElseThrow(() -> new NoSuchElementException("No existe reserva " + codigo));
+            .findById(codigoLimpio)
+            .orElseThrow(() -> new NoSuchElementException("No existe reserva " + codigoLimpio));
 
-    r.cancelar(solicitante.trim());
+    String actor = solicitante.trim();
+    r.cancelar(actor, actor);
     reservaRepository.save(r);
 
     return "Hola "
@@ -132,15 +190,15 @@ public class ReservaService {
   }
 
   public synchronized String checkIn(String codigo, String nombreOperario) {
+    String codigoLimpio = (codigo == null) ? "" : codigo.trim();
     Reserva r =
         reservaRepository
-            .findById(codigo)
-            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
+            .findById(codigoLimpio)
+            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigoLimpio));
 
-    // Generar un legajo estable y seguro a partir del hash del nombre del operario
-    int code = Math.abs(nombreOperario.trim().hashCode() % 1000);
-    String leg = "LEG-" + String.format(java.util.Locale.ROOT, "%03d", code);
-    Personal operario = new Personal(leg, nombreOperario.trim());
+    String operarioLimpio =
+        (nombreOperario == null || nombreOperario.isBlank()) ? "SISTEMA" : nombreOperario.trim();
+    Personal operario = new Personal(generarLegajoOperario(operarioLimpio), operarioLimpio);
 
     r.registrarAsistencia(operario);
     reservaRepository.save(r);
@@ -158,10 +216,15 @@ public class ReservaService {
   }
 
   public synchronized int procesarAusencias() {
-    LocalDate hoy = LocalDate.now();
-    LocalTime ahora = LocalTime.now();
+    return procesarAusencias(null, null);
+  }
 
-    List<Reserva> pendientes = reservaRepository.findPendientesDeAusencia(hoy, ahora);
+  public synchronized int procesarAusencias(LocalDate fecha, LocalTime hora) {
+    LocalDate fechaProceso = (fecha != null) ? fecha : LocalDate.now(clock);
+    LocalTime horaProceso = (hora != null) ? hora : LocalTime.now(clock);
+
+    List<Reserva> pendientes =
+        reservaRepository.findPendientesDeAusencia(fechaProceso, horaProceso);
 
     pendientes.forEach(Reserva::marcarAusenciaAutomatica);
     pendientes.forEach(reservaRepository::save);
@@ -170,10 +233,15 @@ public class ReservaService {
   }
 
   public List<HistorialDTO> obtenerHistorial(String codigo) {
+    String codigoLimpio = (codigo == null) ? "" : codigo.trim();
     Reserva reserva =
         reservaRepository
-            .findById(codigo)
-            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigo));
+            .findById(codigoLimpio)
+            .orElseThrow(() -> new NoSuchElementException("No existe la reserva " + codigoLimpio));
+
+    String fechaTurno = reserva.getTurno().getFecha().format(DATE_FMT);
+    String horaInicio = reserva.getTurno().getHoraInicio().format(TIME_FMT);
+    String horaFin = reserva.getTurno().getHoraFin().format(TIME_FMT);
 
     return reserva.getHistorial().stream()
         .map(
@@ -181,18 +249,23 @@ public class ReservaService {
                 new HistorialDTO(
                     h.getEstado(),
                     h.getFechaRegistro().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
-                    h.getOperario()))
+                    h.getOperario(),
+                    fechaTurno,
+                    horaInicio,
+                    horaFin))
         .toList();
   }
 
-  private void validarPayload(Map<String, String> payload) {
-    if (payload == null
-        || !payload.containsKey("nombreEstudiante")
-        || !payload.containsKey("nombreSala")
-        || !payload.containsKey("fecha")
-        || !payload.containsKey("horaInicio")
-        || !payload.containsKey("horaFin")) {
-      throw new IllegalArgumentException("Payload inválido o incompleto");
-    }
+  private String generarCodigoUnico() {
+    String codigo;
+    do {
+      codigo = "RES-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.ROOT);
+    } while (reservaRepository.findById(codigo).isPresent());
+    return codigo;
+  }
+
+  private String generarLegajoOperario(String nombreOperario) {
+    int code = Math.abs(nombreOperario.hashCode() % 1000);
+    return "LEG-" + String.format(Locale.ROOT, "%03d", code);
   }
 }

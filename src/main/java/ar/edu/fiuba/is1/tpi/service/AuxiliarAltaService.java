@@ -4,70 +4,61 @@ import ar.edu.fiuba.is1.tpi.domain.Estudiante;
 import ar.edu.fiuba.is1.tpi.domain.Sala;
 import ar.edu.fiuba.is1.tpi.repository.EstudianteRepository;
 import ar.edu.fiuba.is1.tpi.repository.SalaRepository;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import ar.edu.fiuba.is1.tpi.service.dto.AltaEstudianteRequest;
+import ar.edu.fiuba.is1.tpi.service.dto.AltaSalaRequest;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuxiliarAltaService {
 
-  @Autowired private SalaRepository salaRepository;
-  @Autowired private EstudianteRepository estudianteRepository;
+  private final SalaRepository salaRepository;
+  private final EstudianteRepository estudianteRepository;
 
-  public Sala crearSala(Map<String, Object> body) {
-    if (body == null) {
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Los repositorios son colaboradores inyectados por Spring.")
+  public AuxiliarAltaService(
+      SalaRepository salaRepository, EstudianteRepository estudianteRepository) {
+    this.salaRepository = salaRepository;
+    this.estudianteRepository = estudianteRepository;
+  }
+
+  public Sala crearSala(AltaSalaRequest request) {
+    if (request == null) {
       throw new IllegalArgumentException("El cuerpo no puede estar vacío.");
     }
 
-    String codigo = (String) body.get("codigo");
-    String nombre = (String) body.get("nombre");
-
-    if (codigo == null
-        || codigo.isBlank()
-        || nombre == null
-        || nombre.isBlank()
-        || body.get("capacidad") == null) {
-      throw new IllegalArgumentException("Datos de sala incompletos.");
+    if (salaRepository.existsById(request.codigo())) {
+      return salaRepository.findById(request.codigo()).orElseThrow();
     }
 
-    int capacidad = Integer.parseInt(body.get("capacidad").toString());
-
-    if (salaRepository.existsById(codigo)) {
-      return salaRepository.findById(codigo).orElse(null);
-    }
-
-    Sala porNombre = salaRepository.findByNombreIgnoreCase(nombre).orElse(null);
+    Sala porNombre = salaRepository.findByNombreIgnoreCase(request.nombre()).orElse(null);
     if (porNombre != null) {
       return porNombre;
     }
 
-    Sala sala = new Sala(codigo, nombre.trim(), capacidad);
+    Sala sala = new Sala(request.codigo(), request.nombre(), request.capacidad());
     salaRepository.save(sala);
     return sala;
   }
 
-  public Estudiante crearEstudiante(Map<String, String> body) {
-    if (body == null) {
+  public Estudiante crearEstudiante(AltaEstudianteRequest request) {
+    if (request == null) {
       throw new IllegalArgumentException("El cuerpo no puede estar vacío.");
     }
 
-    String legajo = body.get("legajo");
-    String nombre = body.get("nombre");
-
-    if (legajo == null || legajo.isBlank() || nombre == null || nombre.isBlank()) {
-      throw new IllegalArgumentException("Legajo y nombre son requeridos.");
+    if (estudianteRepository.existsById(request.legajo())) {
+      return estudianteRepository.findById(request.legajo()).orElseThrow();
     }
 
-    if (estudianteRepository.existsById(legajo)) {
-      return estudianteRepository.findById(legajo).orElse(null);
-    }
-
-    Estudiante porNombre = estudianteRepository.findByNombreIgnoreCase(nombre).orElse(null);
+    Estudiante porNombre =
+        estudianteRepository.findByNombreIgnoreCase(request.nombre()).orElse(null);
     if (porNombre != null) {
       return porNombre;
     }
 
-    Estudiante estudiante = new Estudiante(legajo, nombre.trim());
+    Estudiante estudiante = new Estudiante(request.legajo(), request.nombre());
     estudianteRepository.save(estudiante);
     return estudiante;
   }

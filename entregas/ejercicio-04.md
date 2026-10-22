@@ -22,7 +22,10 @@ Cerrar una primera versión end-to-end del sistema de gestión de turnos a salas
 - `docs/arquitectura/adr-001.md`;
 - `docs/arquitectura/api-rest.md`;
 - `db/modelo-er.md`;
+- `db/schema.sql`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/config/AppConfig.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/controller/AuxiliarAltaController.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/controller/GlobalExceptionHandler.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/controller/ReservaController.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/domain/Estudiante.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/domain/HistorialEstado.java`;
@@ -30,35 +33,31 @@ Cerrar una primera versión end-to-end del sistema de gestión de turnos a salas
 - `src/main/java/ar/edu/fiuba/is1/tpi/domain/Reserva.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/domain/Sala.java`;
 - `src/main/java/ar/edu/fiuba/is1/tpi/domain/Turno.java`;
-- `/src/main/java/ar/edu/fiuba/is1/tpi/repository/EstudianteRepository.java`;
-- `/src/main/java/ar/edu/fiuba/is1/tpi/repository/ReservaRepository.java`;
-- `/src/main/java/ar/edu/fiuba/is1/tpi/repository/SalaRepository.java`;
- - `src/main/java/ar/edu/fiuba/is1/tpi/repository/EstudianteRepository.java`;
- - `src/main/java/ar/edu/fiuba/is1/tpi/repository/ReservaRepository.java`;
- - `src/main/java/ar/edu/fiuba/is1/tpi/repository/SalaRepository.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/repository/EstudianteRepository.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/repository/ReservaRepository.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/repository/SalaRepository.java`;
 - `/src/main/java/ar/edu/fiuba/is1/tpi/service/AuxiliarAltaService.java`;
 - `/src/main/java/ar/edu/fiuba/is1/tpi/service/ReservaService.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/CancelacionSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/CheckInSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/CommonSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/DisponibilidadSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/FlujoApiSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/HistorialSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/ReservaSteps.java`;
-- `/src/test/java/ar/edu/fiuba/is1/tpi/bdd/ScenarioState.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CancelacionSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CheckInSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CommonSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/DisponibilidadSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/FlujoApiSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/HistorialSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/ReservaSteps.java`;
- - `src/test/java/ar/edu/fiuba/is1/tpi/bdd/ScenarioState.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/service/dto/AltaSalaRequest.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/service/dto/AltaEstudianteRequest.java`;
+- `src/main/java/ar/edu/fiuba/is1/tpi/service/dto/CrearReservaRequest.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CancelacionSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CheckInSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/CommonSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/DisponibilidadSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/FlujoApiSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/HistorialSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/ReservaSteps.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/bdd/ScenarioState.java`;
 - `src/test/resources/features/HU-01.feature`;
 - `src/test/resources/features/HU-02.feature`;
 - `src/test/resources/features/HU-03.feature`;
 - `src/test/resources/features/HU-04.feature`;
 - `src/test/resources/features/ejercicio-04-flujo-api.feature`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/domain/ReservaTest.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/domain/ValidacionesDominioTest.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/service/ReservaServiceTest.java`;
+- `src/test/java/ar/edu/fiuba/is1/tpi/StorybookResourceTest.java`;
 - `entregas/ejercicio-04.md`.
 
 ## Cambios principales
@@ -112,7 +111,17 @@ A nivel arquitectónico y de persistencia, se diseñó formalmente el **Modelo E
 - Repositorios en memoria: `SalaRepository` y `EstudianteRepository` cambiaron su almacenamiento interno a `ConcurrentHashMap` para reducir posibilidades de condition-race en accesos concurrentes (nota: `ReservaRepository` mantiene sincronización en métodos críticos).
 - Se añadieron tests/steps y actualizaciones de BDD para mantener trazabilidad sobre los cambios anteriores.
 
-Nota importante sobre calidad automática: aún resta aplicar `google-java-format` a los archivos modificados — `./gradlew check` puede fallar en la tarea `googleJavaFormatCheck` hasta que se aplique el formateo. También se corrigió un warning de PMD relacionado con imports duplicados.
+### Endurecimiento de API y validación (Ejercicio 04)
+
+- Se reemplazaron los `Map` genéricos por DTOs con Bean Validation en altas y creación de reservas.
+- Se agregó `GlobalExceptionHandler` para devolver `400 text/plain` ante validaciones, recursos inexistentes, errores de formato y reglas de negocio.
+- `ReservaController` ya no decodifica parámetros manualmente ni captura excepciones por endpoint; delega en el handler global.
+- `ReservaService` usa inyección por constructor y `Clock` inyectado. `procesarAusencias` acepta fecha/hora opcionales para pruebas deterministas.
+- `AppConfig` publica el Storybook bajo `/docs/**` y provee el `Clock`.
+- Se agregaron tests unitarios de dominio y servicio; la suite BDD cubre creación, disponibilidad, cancelación, check-in, ausencias e historial.
+- `db/schema.sql` materializa el modelo ER como preparación para la migración a JPA.
+
+Nota de calidad: los archivos Java se formatean con `google-java-format`; la verificación final se ejecuta con `./gradlew test` y los checks de `./gradlew check`.
 
 
 ## Flujo de prueba de API 

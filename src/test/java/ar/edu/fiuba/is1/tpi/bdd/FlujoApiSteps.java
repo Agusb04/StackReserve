@@ -8,8 +8,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,11 +113,9 @@ public class FlujoApiSteps {
       String codigo = codigoReservaPorEstudiante.get(estudiante);
       assertThat(codigo).as("No se encontró código de reserva para: " + estudiante).isNotNull();
 
-      String solicitante = URLEncoder.encode(estudiante, StandardCharsets.UTF_8);
-
       ResponseEntity<String> response =
           restTemplate.postForEntity(
-              "/api/reservas/" + codigo + "/cancelar?solicitante=" + solicitante,
+              "/api/reservas/" + codigo + "/cancelar?solicitante=" + estudiante,
               null,
               String.class);
 

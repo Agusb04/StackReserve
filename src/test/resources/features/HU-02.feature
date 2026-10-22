@@ -33,9 +33,9 @@ Característica: Consultar disponibilidad de salas para un día determinado
       Entonces la "Sala Silencio B" figura con 0 cupos disponibles
       Y la "Sala Multimedia A" figura con 6 cupos disponibles
 
-  Regla: Los días que no registran oferta horaria asignada se presentan sin resultados
+  Regla: Cuando no hay salas registradas, la consulta de disponibilidad no devuelve resultados
 
-    Escenario: Consulta de disponibilidad para un día sin turnos
-      Dado que no existen turnos configurados para el 01/01/2030
+    Escenario: Consulta de disponibilidad sin salas registradas
+      Dado que no existen salas registradas para el 01/01/2030
       Cuando se consulta la disponibilidad de salas para el 01/01/2030
       Entonces se retorna una lista vacía

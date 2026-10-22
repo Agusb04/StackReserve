@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,12 +151,9 @@ public class CancelacionSteps {
   @Cuando("^el estudiante \"([^\"]*)\" intenta cancelar la reserva RES-(\\d+)$")
   public void solicitarCancelacion(String nombre, String codigo) {
     String idReal = obtenerIdReal(codigo);
-    String solicitanteCodificado = URLEncoder.encode(nombre, StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/" + idReal + "/cancelar?solicitante=" + solicitanteCodificado,
-            null,
-            String.class));
+            "/api/reservas/" + idReal + "/cancelar?solicitante=" + nombre, null, String.class));
   }
 
   @Cuando("^el estudiante intenta cancelar la reserva RES-(\\d+)$")

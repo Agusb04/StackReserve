@@ -49,8 +49,8 @@ En la capa externa se ubican los servicios y recursos tecnológicos que soportan
 ## Cobertura faltante
 
 - Administradores del sistema (rol interno específico)
-- Integración con sistemas institucionales
-- Definición de penalizaciones por ausencias
+- Detalle de integración con el sistema institucional de autenticación
+- Umbral y duración de penalizaciones por ausencias (D-02)
 
 ---
 

@@ -10,8 +10,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,38 +113,33 @@ public class CheckInSteps {
   @Cuando("^Ana Pérez registra la asistencia de la reserva RES-(\\d+)$")
   public void registrarAsistenciaPorDefecto(String codigo) {
     String idReal = obtenerIdReal(codigo);
-    // "Ana Pérez" coincide con el comportamiento de negocio explícito pasándolo URL-encoded
-    String operarioParam = URLEncoder.encode("Ana Pérez", StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=Ana Pérez", null, String.class));
   }
 
   @Cuando("^\"([^\"]*)\" registra la asistencia de la reserva RES-(\\d+)$")
   public void registrarAsistenciaPorOperario(String operario, String codigo) {
     String idReal = obtenerIdReal(codigo);
-    String operarioParam = URLEncoder.encode(operario, StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operario, null, String.class));
   }
 
   @Cuando("^Ana Pérez intenta registrar nuevamente la asistencia de la reserva RES-(\\d+)$")
   public void reintentarAsistenciaPorDefecto(String codigo) {
     String idReal = obtenerIdReal(codigo);
-    String operarioParam = URLEncoder.encode("Ana Pérez", StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=Ana Pérez", null, String.class));
   }
 
   @Cuando("^\"([^\"]*)\" intenta registrar nuevamente la asistencia de la reserva RES-(\\d+)$")
   public void reintentarAsistenciaPorOperario(String operario, String codigo) {
     String idReal = obtenerIdReal(codigo);
-    String operarioParam = URLEncoder.encode(operario, StandardCharsets.UTF_8);
     state.setLastResponse(
         restTemplate.postForEntity(
-            "/api/reservas/" + idReal + "/check-in?operario=" + operarioParam, null, String.class));
+            "/api/reservas/" + idReal + "/check-in?operario=" + operario, null, String.class));
   }
 
   @Cuando("^el estudiante realiza el check-in de la reserva RES-(\\d+)$")
@@ -208,8 +201,11 @@ public class CheckInSteps {
 
     assertThat(contiene)
         .withFailMessage(
-            "No se encontró el estado '%s' en el historial de %s (Real: %s)",
-            estado, codigo, idReal)
+            "No se encontró el estado '%s' en el historial de %s (Real: %s). Última respuesta: %s",
+            estado,
+            codigo,
+            idReal,
+            state.getLastResponse() != null ? state.getLastResponse().getBody() : "sin respuesta")
         .isTrue();
   }
 

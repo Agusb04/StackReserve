@@ -37,8 +37,17 @@ public final class Reserva {
   }
 
   public void cancelar(String solicitante) {
-    if ("cancelada".equalsIgnoreCase(getEstadoActual())) {
+    cancelar(solicitante, "SISTEMA");
+  }
+
+  public void cancelar(String solicitante, String operario) {
+    String estadoActual = getEstadoActual();
+    if ("cancelada".equalsIgnoreCase(estadoActual)) {
       throw new IllegalStateException("La reserva " + this.codigo + " ya se encuentra cancelada");
+    }
+    if (!"confirmada".equalsIgnoreCase(estadoActual)) {
+      throw new IllegalStateException(
+          "La reserva " + this.codigo + " no puede cancelarse en estado " + estadoActual);
     }
 
     boolean coincideNombre = this.estudiante.nombre().trim().equalsIgnoreCase(solicitante.trim());
@@ -49,13 +58,22 @@ public final class Reserva {
           "No tenés permiso para cancelar esta reserva ya que no te pertenece");
     }
 
-    this.historial.add(new HistorialEstado("cancelada", "SISTEMA"));
+    this.historial.add(new HistorialEstado("cancelada", operario));
   }
 
   public void registrarAsistencia(Personal operario) {
-    if ("presente".equalsIgnoreCase(getEstadoActual())) {
+    String estadoActual = getEstadoActual();
+    if ("presente".equalsIgnoreCase(estadoActual)) {
       throw new IllegalStateException(
           "La reserva " + this.codigo + " ya tiene asistencia registrada");
+    }
+    if ("cancelada".equalsIgnoreCase(estadoActual)) {
+      throw new IllegalStateException(
+          "La reserva " + this.codigo + " se encuentra cancelada y no admite check-in");
+    }
+    if (!"confirmada".equalsIgnoreCase(estadoActual)) {
+      throw new IllegalStateException(
+          "La reserva " + this.codigo + " no admite check-in en estado " + estadoActual);
     }
     if (operario == null) {
       throw new IllegalArgumentException(

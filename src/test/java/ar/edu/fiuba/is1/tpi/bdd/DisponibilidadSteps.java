@@ -98,8 +98,8 @@ public class DisponibilidadSteps {
     crearMultiplesReservasDisponibilidad(capacidadAColapsar, salaNombre, fecha);
   }
 
-  @Dado("^que no existen turnos configurados para el (\\d{2}/\\d{2}/\\d{4})$")
-  public void simularDiaSinTurnos(String f) {
+  @Dado("^que no existen salas registradas para el (\\d{2}/\\d{2}/\\d{4})$")
+  public void simularDiaSinSalas(String f) {
     reservaRepository.deleteAll();
     salaRepository.deleteAll();
     estudianteRepository.deleteAll();

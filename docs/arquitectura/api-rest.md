@@ -13,8 +13,10 @@ los escenarios definidos para la entrega.
 - Cada endpoint expone operaciones sobre un recurso: sala, estudiante o reserva.
 - `GET` consulta información, `POST` crea o modifica recursos, alineado a buenas prácticas REST.
 - Los datos simples viajan en parámetros de URL (`GET`), los datos compuestos en `body` (`POST`).
-Las respuestas exitosas tienen formato JSON, salvo los endpoints de reserva, cancelación,
-check-in y procesar-ausencias que retornan texto plano con el mensaje de confirmación.
+- Los cuerpos de alta y creación se validan con DTOs tipados y Bean Validation; no se reciben
+  `Map` genéricos ni se decodifican parámetros manualmente.
+- Las respuestas exitosas tienen formato JSON, salvo los endpoints de reserva, cancelación,
+  check-in y procesar-ausencias que retornan texto plano con el mensaje de confirmación.
 - Los códigos HTTP usados son: `200 OK` para éxito y `400 Bad Request` para cualquier error
   (validación, recurso inexistente, regla de negocio o acción no permitida), acompañado siempre
   de un mensaje de texto que describe la causa.
@@ -32,6 +34,7 @@ check-in y procesar-ausencias que retornan texto plano con el mensaje de confirm
 | Historial de reserva       | GET    | /api/reservas/{codigo}/historial              | Ver historial de cambios de estado    | HU-04                |
 | Procesar ausencias         | POST   | /api/reservas/procesar-ausencias              | Marca en lote las reservas ausentes   | HU-04     |
 | Health                     | GET    | /api/health                                   | Ping/estado de la API                 | Infra     |
+| Storybook UX               | GET    | /docs/ux/storybook/index.html                 | Prototipo navegable servido por el backend | UX        |
 
 ## Contratos de request y respuesta
 
@@ -51,7 +54,11 @@ Accept: application/json
 ]
 ```
 
-Si no hay salas registradas retorna un array vacío. Si el formato de fecha es inválido: `400 Bad Request`.
+Si no hay salas registradas retorna un array vacío. Si falta el parámetro `fecha` o su formato
+es inválido: `400 Bad Request`.
+
+El cupo se calcula por día y sala restando las reservas en estado `confirmada` de la capacidad
+máxima. La cancelación libera el cupo de inmediato.
 
 ---
 
@@ -79,7 +86,8 @@ Content-Type: application/json
 ```
 
 Si ya existe una sala con el mismo código o nombre, retorna la entidad existente sin error.
-Si faltan datos obligatorios: `400 Bad Request` con mensaje descriptivo.
+Los campos `codigo` y `nombre` no pueden estar en blanco y `capacidad` debe ser mayor a cero;
+en caso contrario retorna `400 Bad Request` con mensaje descriptivo.
 
 ---
 
@@ -106,6 +114,7 @@ Content-Type: application/json
 ```
 
 Si ya existe un estudiante con el mismo legajo o nombre, retorna el existente sin error.
+`legajo` y `nombre` no pueden estar en blanco. Todo estudiante nuevo se registra como `ACTIVO`.
 
 ---
 
@@ -133,11 +142,14 @@ RES-1A2B | ¡Reserva confirmada! Te esperamos en la Sala 101 el 12/06/2026 a las
 
 Toda reserva creada exitosamente nace en estado `confirmada`.
 El código de reserva (`RES-XXXX`) se incluye al inicio del mensaje separado por `|` y es el
-identificador para las operaciones posteriores (cancelar, check-in, historial).
+identificador para las operaciones posteriores (cancelar, check-in, historial). Se genera con
+un UUID parcial y se verifica que no colisione con una reserva existente.
 
 Errores posibles (`400 Bad Request`):
-- Payload nulo o campos obligatorios ausentes.
+- Payload nulo o campos obligatorios ausentes o en blanco.
+- Formato de fecha u hora inválido, o `horaInicio` no anterior a `horaFin`.
 - Sala o estudiante no registrados en el sistema.
+- Estudiante con `estadoHabilitacion` distinto de `ACTIVO`.
 - No hay cupo disponible para ese turno.
 - El estudiante ya tiene una reserva confirmada para ese mismo horario.
 
@@ -151,7 +163,7 @@ POST /api/reservas/RES-1A2B/cancelar?solicitante=Ana%20Perez
 ```
 
 El parámetro `solicitante` debe coincidir con el nombre o legajo del estudiante titular
-de la reserva (se acepta URL-encoded).
+de la reserva. Spring MVC decodifica el parámetro; el cliente debe enviarlo URL-encoded.
 
 **Respuesta (texto plano):**
 ```
@@ -162,7 +174,9 @@ Hola Ana, tu reserva en la Sala 101 para el 12/06/2026 ha sido cancelada con éx
 Errores posibles (`400 Bad Request`):
 - La reserva no existe.
 - La reserva ya estaba cancelada.
+- La reserva no está en estado `confirmada`.
 - El solicitante no es el titular de la reserva.
+- El parámetro `solicitante` está vacío o ausente.
 
 ---
 
@@ -184,6 +198,7 @@ Asistencia registrada: Ana Perez (111/22), Sala 101, 12/06/2026 09:00
 Errores posibles (`400 Bad Request`):
 - La reserva no existe.
 - La reserva ya tiene asistencia registrada.
+- La reserva está cancelada o no está en estado `confirmada`.
 
 ---
 
@@ -197,12 +212,28 @@ GET /api/reservas/RES-1A2B/historial
 **Respuesta:**
 ```json
 [
-  { "estado": "confirmada", "fechaRegistro": "01/06/2026 08:11", "operario": "SISTEMA" },
-  { "estado": "cancelada",  "fechaRegistro": "02/06/2026 09:14", "operario": "SISTEMA" }
+  {
+    "estado": "confirmada",
+    "fechaRegistro": "01/06/2026 08:11",
+    "operario": "SISTEMA",
+    "fechaTurno": "12/06/2026",
+    "horaInicio": "09:00",
+    "horaFin": "09:30"
+  },
+  {
+    "estado": "cancelada",
+    "fechaRegistro": "02/06/2026 09:14",
+    "operario": "SISTEMA",
+    "fechaTurno": "12/06/2026",
+    "horaInicio": "09:00",
+    "horaFin": "09:30"
+  }
 ]
 ```
 
 La lista está ordenada cronológicamente. El último elemento refleja el estado actual de la reserva.
+Cada entrada incluye los datos del turno reservado (`fechaTurno`, `horaInicio`, `horaFin`) para
+que el cliente pueda auditar la reserva sin consultar otro endpoint.
 
 Errores posibles (`400 Bad Request`):
 - La reserva no existe.
@@ -218,6 +249,9 @@ POST /api/reservas/procesar-ausencias
 
 Marca como `ausente` todas las reservas en estado `confirmada` cuyo turno ya haya finalizado
 (fecha anterior a hoy, o fecha de hoy con hora de fin pasada).
+
+Para pruebas deterministas se pueden indicar `fecha=dd/MM/yyyy` y `hora=HH:mm` como parámetros
+opcionales; si se omiten, se usa el reloj del sistema inyectado en el servicio.
 
 **Respuesta (texto plano):**
 ```
@@ -252,6 +286,8 @@ Si hay algún error o restricción, `400 Bad Request` con mensaje descriptivo.
 | HU de disponibilidad (HU-02)        | GET /api/salas/disponibilidad         | Consulta disponibilidad     | Test BDD, HTTP/JSON |
 | HU de creación de reservas (HU-01)  | POST /api/reservas                    | Alta de reservas con datos  | Test BDD, texto     |
 | HU de cancelación (HU-03)           | POST /api/reservas/{codigo}/cancelar  | Cancelación por titular     | Test BDD, texto     |
+| HU de asistencia (HU-04)            | POST /api/reservas/{codigo}/check-in  | Check-in y ausencias        | Test BDD, unitarios |
+| HU de trazabilidad (HU-04)          | GET /api/reservas/{codigo}/historial  | Historial de estados        | Test BDD, unitarios |
 
 ---
 

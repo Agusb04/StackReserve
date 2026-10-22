@@ -141,7 +141,7 @@
             <option value="libres">Escenario: Consulta con salas libres</option>
             <option value="parcial">Escenario: Consulta con sala parcialmente ocupada</option>
             <option value="sin-cupo">Escenario: Consulta con sala sin cupo</option>
-            <option value="sin-turnos">Escenario: Consulta para un día sin turnos configurados</option>
+            <option value="sin-turnos">Escenario: Consulta sin salas registradas</option>
           </select>
           <div id="gherkin-text" class="gherkin-box"></div>
         </section>
@@ -218,12 +218,12 @@ Y la "Sala Multimedia A" figura con 6 cupos disponibles.`,
         },
         'sin-turnos': {
           fecha: '01/01/2030',
-          text: `Escenario: Consulta de disponibilidad para un día sin turnos
-Dado que no existen turnos configurados para el 01/01/2030
+          text: `Escenario: Consulta de disponibilidad sin salas registradas
+Dado que no existen salas registradas para el 01/01/2030
 Cuando se consulta la disponibilidad de salas para el 01/01/2030
 Entonces se retorna una lista vacía.`,
           salas: [],
-          feedback: { tipo: 'info', msg: 'No hay turnos configurados para el 01/01/2030. Se retorna lista vacía.' }
+          feedback: { tipo: 'info', msg: 'No hay salas registradas para el 01/01/2030. Se retorna lista vacía.' }
         }
       };
 
@@ -244,8 +244,8 @@ Entonces se retorna una lista vacía.`,
         resumen.innerHTML = '';
 
         if (cfg.salas.length === 0) {
-          panel.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No hay turnos configurados para esta fecha.<br>La consulta retorna lista vacía.</p></div>`;
-          addLog(cfg.fecha, 'lista-vacía', 'No hay turnos configurados. Retorna [].');
+          panel.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No hay salas registradas para esta fecha.<br>La consulta retorna lista vacía.</p></div>`;
+          addLog(cfg.fecha, 'lista-vacía', 'No hay salas registradas. Retorna [].');
         } else {
           const totalCupos = cfg.salas.reduce((s, sala) => s + (sala.capacidad - sala.ocupadas), 0);
           resumen.innerHTML = `

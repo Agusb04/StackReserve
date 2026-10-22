@@ -173,14 +173,19 @@ public class HistorialSteps {
 
       assertThat(historial).isNotNull().isNotEmpty();
 
-      boolean tieneFecha =
+      String fechaEsperada = esperado.substring(0, 10);
+      String horaEsperada = esperado.substring(11);
+      boolean coincideTurno =
           historial.stream()
               .anyMatch(
                   d ->
-                      d.get("fechaRegistro") != null
-                          && !String.valueOf(d.get("fechaRegistro")).isBlank());
+                      fechaEsperada.equals(String.valueOf(d.get("fechaTurno")))
+                          && horaEsperada.equals(String.valueOf(d.get("horaInicio"))));
 
-      assertThat(tieneFecha).isTrue();
+      assertThat(coincideTurno)
+          .withFailMessage(
+              "Se esperaba el turno '%s' pero el historial devolvió: %s", esperado, historial)
+          .isTrue();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
